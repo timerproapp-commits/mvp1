@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SwimCoach Pro - Final UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #1a1a1a;
+            --accent: #00e676;
+            --pause: #ffffff;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 5px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header con Menú */
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        #main-clock {
+            font-size: 2.5rem;
+            font-family: monospace;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .menu-container {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+
+        .dots-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: #333;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            min-width: 150px;
+        }
+
+        .dropdown button {
+            background: none;
+            color: white;
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .setup-zone {
+            text-align: center;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .lanes-grid {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .lane-card {
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            min-height: 14.5vh;
+            border-radius: 8px;
+            padding: 12px 8px;
+            box-sizing: border-box;
+            gap: 6px;
+        }
+
+        .lane-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .lane-input {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 0.8rem;
+            width: 60%;
+            text-transform: uppercase;
+        }
+
+        .last-lap-display {
+            font-size: 1.35rem;
+            color: var(--accent);
+            font-family: monospace;
+        }
+
+
+        .btn-group {
+            flex-direction: column;
+            /* antes era fila */
+            align-items: stretch;
+            /* que ocupen todo el ancho */
+        }
+
+        button {
+            border: none;
+            border-radius: 6px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-lap {
+            flex: 1;
+            min-height: 56px;
+            font-size: 1.25rem;
+        }
+
+
+        .btn-pause {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 0;
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--pause);
+            color: #111;
+            font-size: 1rem;
+        }
+
+
+        .btn-pause {
+            background: var(--pause);
+            color: rgb(252, 0, 0);
+        }
+
+        .btn-start-global {
+            background: var(--accent);
+            color: black;
+            padding: 20px;
+            font-size: 1.5rem;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        button:active {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+
+        .active-lane {
+            border-left: 4px solid var(--accent);
+        }
+
+        .paused-lane {
+            border-left: 4px solid var(--pause);
+            opacity: 0.6;
+        }
+
+
+        /* Override: parciales (verde) más grandes */
+        .last-lap-display {
+            font-size: 1.35rem !important;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        /* Centra el parcial en el alto de la card */
+        .lane-card {
+            position: relative;
+            /* habilita posicionar hijos en absoluto */
+        }
+
+        /* Contenedor a la derecha, centrado vertical */
+        .lap-display {
+            position: absolute;
+            top: 50%;
+            right: 14px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+
+
+        /* Línea superior: acumulado (verde) */
+        .lap-display .last-lap-display {
+            font-size: 1.35rem;
+            /* ya venías usándolo grande */
+            font-weight: 800;
+            line-height: 1.05;
+            color: var(--accent);
+            /* tu verde actual */
+        }
+
+        /* Línea inferior: Vuelta (duración del lap) */
+        .lap-display .last-lap-diff {
+            font-size: 0.95rem;
+            line-height: 1.05;
+            color: #8ef5a1;
+            /* verde más claro; ajustá a gusto */
+            opacity: .9;
+            font-family: monospace;
+            /* opcional, queda bien para tiempos */
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="setup" class="setup-zone">
+        <h2>Nadadores: <input type="number" id="num-swimmers" value="7" style="width:50px; font-size: 1.5rem;"></h2>
+        <button class="btn-start-global" onclick="initRace()">PREPARAR</button>
+    </div>
+
+    <div class="header" id="header-ui" style="display:none;">
+        <div id="main-clock">00:00.00</div>
+        <div class="menu-container">
+            <button class="dots-btn" onclick="toggleMenu()">⋮</button>
+            <div class="dropdown" id="myDropdown">
+                <button onclick="downloadCSV()">Exportar CSV</button>
+                <button onclick="location.reload()" style="color: #ff5252;">Reiniciar Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="run-controls" style="display:none; padding: 10px;">
+        <button class="btn-start-global" onclick="startGlobalTimer()">¡START!</button>
+    </div>
+
+    <div class="lanes-grid" id="lanes-container"></div>
+
+    <script>
+        let startTime = null;
+        let timerInterval = null;
+        let swimmers = [];
+
+        function toggleMenu() {
+            const dot = document.getElementById("myDropdown");
+            dot.style.display = dot.style.display === "block" ? "none" : "block";
+        }
+
+        function initRace() {
+            const num = document.getElementById('num-swimmers').value;
+            const container = document.getElementById('lanes-container');
+            container.innerHTML = '';
+            swimmers = [];
+
+            for (let i = 1; i <= num; i++) {
+                swimmers.push({ id: i, laps: [], final: null, active: true });
+                container.innerHTML += `
+                    <div class="lane-card" id="card-${i}">
+                        <div class="lane-header">
+                            
+
+
+                           <input type="text" class="lane-input" value="NADADOR ${i}" id="name-${i}">
+<div class="lap-display">
+  <div class="last-lap-display" id="last-${i}">--:--.--</div>
+  <div class="last-lap-diff"  id="lastdiff-${i}">--:--.--</div>
+</div>
+
+
+
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-lap" onclick="recordLap(${i})" id="lap-${i}" disabled>PARCIAL</button>
+                            <button class="btn-pause" onclick="toggleSwimmer(${i})" id="pause-${i}" disabled>🔴</button>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('header-ui').style.display = 'flex';
+            document.getElementById('run-controls').style.display = 'block';
+        }
+
+        function startGlobalTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
+            }, 10);
+            document.getElementById('run-controls').style.display = 'none';
+            swimmers.forEach(s => {
+                document.getElementById(`lap-${s.id}`).disabled = false;
+                document.getElementById(`pause-${s.id}`).disabled = false;
+                document.getElementById(`card-${s.id}`).classList.add('active-lane');
+            });
+        }
+
+        function formatTime(ms) {
+            const t = new Date(ms);
+            const m = String(t.getUTCMinutes()).padStart(2, '0');
+            const s = String(t.getUTCSeconds()).padStart(2, '0');
+            const mil = String(Math.floor(t.getUTCMilliseconds() / 10)).padStart(2, '0');
+            return `${m}:${s}.${mil}`;
+        }
+
+
+        // helper para convertir "MM:SS.cc" a centésimas
+        function toCentis(t) {
+            const [mmss, cc = "00"] = String(t).split('.');
+            const [mm = "00", ss = "00"] = (mmss || "").split(':');
+            return (parseInt(mm || 0, 10) * 60 + parseInt(ss || 0, 10)) * 100 + parseInt(cc || 0, 10);
+        }
+        ``
+
+        function recordLap(id) {
+            const s = swimmers.find(sw => sw.id === id);
+            if (!s.active) return;
+
+            const nowMs = Date.now() - startTime;
+            const timeStr = formatTime(nowMs);  // acumulado "MM:SS.cc"
+
+            // VUELTA = diff entre acumulados (primera vuelta = acumulado)
+            let lapCentis;
+            if (s.laps.length === 0) {
+                lapCentis = toCentis(timeStr);
+            } else {
+                lapCentis = toCentis(timeStr) - toCentis(s.laps[s.laps.length - 1]);
+            }
+            const lapStr = formatTime(lapCentis * 10);        // reusar formatTime (centésimas → ms)
+
+            // persistir y pintar
+            s.laps.push(timeStr);
+            document.getElementById(`last-${id}`).innerText = timeStr; // ACUMULADO (arriba)
+            document.getElementById(`lastdiff-${id}`).innerText = lapStr;  // VUELTA (abajo)
+        }
+
+        function toggleSwimmer(id) {
+            const s = swimmers.find(sw => sw.id === id);
+            const btn = document.getElementById(`pause-${id}`);
+            const card = document.getElementById(`card-${id}`);
+
+            if (s.active) {
+                s.final = formatTime(Date.now() - startTime);
+                s.active = false;
+                btn.innerText = "♻️";
+                btn.style.background = "#555";
+                btn.style.color = "white";
+                card.classList.replace('active-lane', 'paused-lane');
+            } else {
+                s.active = true;
+                btn.innerText = "🔴";
+                btn.style.background = "var(--pause)";
+                btn.style.color = "black";
+                card.classList.replace('paused-lane', 'active-lane');
+            }
+        }
+
+        function downloadCSV() {
+            // cerrar menú si estaba abierto
+            toggleMenu?.();
+
+            // helpers: MM:SS.cc ↔ centésimas
+            const parseToCentis = (t) => {
+                const [mmss, cc = "00"] = String(t).split('.');
+                const [mm = "00", ss = "00"] = (mmss || "").split(':');
+                return (parseInt(mm || 0, 10) * 60 + parseInt(ss || 0, 10)) * 100 + parseInt(cc || 0, 10);
+            };
+            const fmtFromCentis = (centis) => {
+                const totalSec = Math.floor(centis / 100);
+                const cc = String(centis % 100).padStart(2, '0');
+                const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+                const ss = String(totalSec % 60).padStart(2, '0');
+                return `${mm}:${ss}.${cc}`;
+            };
+
+            const lines = [];
+            swimmers.forEach((s) => {
+                const nombre = document.getElementById(`name-${s.id}`)?.value || `NADADOR ${s.id}`;
+
+                // Encabezado de bloque tipo Multi Timer
+                lines.push("Multi Timer Lista de vueltas");
+                lines.push(nombre); // escribí aquí "Nombre y prueba" en el input
+                lines.push("Número ; Duration ; Vuelta");
+
+                // s.laps son tiempos ACUMULADOS → la Vuelta = diff con el acumulado anterior
+                let prev = 0;
+                if (s.laps.length === 0 && s.final) {
+                    const dur = parseToCentis(s.final);
+                    lines.push(`1 ; ${fmtFromCentis(dur)} ; ${fmtFromCentis(dur)}`);
+                } else {
+                    s.laps.forEach((durStr, idx) => {
+                        const dur = parseToCentis(durStr);
+                        const lap = Math.max(dur - prev, 0);
+                        prev = dur;
+                        lines.push(`${idx + 1} ; ${fmtFromCentis(dur)} ; ${fmtFromCentis(lap)}`);
+                    });
+                }
+
+                // línea en blanco opcional entre bloques:
+                // lines.push("");
+            });
+
+            const blob = new Blob([lines.join("\r\n")], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "multi_timer_export.txt";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+
+        // Cerrar menú si se toca fuera
+        window.onclick = function (event) {
+            if (!event.target.matches('.dots-btn')) {
+                document.getElementById("myDropdown").style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>
