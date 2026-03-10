@@ -1,125 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nado • App</title>
-  <link rel="stylesheet" href="mock_style.css" />
-  
-  <style>
-    /* VARIABLES DE COLOR: Si cambias estos códigos (ej. #8cdec0), cambia el color de fondo de las secciones */
-    :root {
-      --orange-bg: #8cdec0; /* Color de fondo para la sección de Carga (Paso 1) */
-      --orange-bd: #a9bdc1; /* Color del borde para la sección de Carga */
-      --comp-bg: #89c5db;   /* Color de fondo para la sección de Revisión (Paso 2) */
-      --comp-bd: #899faa;   /* Color del borde para la sección de Revisión */
-      --nav-height: 60px;   /* Altura fija de la barra de navegación superior */
-    }
-
-    /* BARRA DE NAVEGACIÓN SUPERIOR: Controla que siempre esté arriba (sticky) y su diseño */
-    header {
-      position: sticky;
-      top: 0;
-      background: #ffffff;
-      border-bottom: 1px solid #000000; /* Línea gruesa negra debajo del menú */
-      height: var(--nav-height);
-      display: flex;
-      justify-content: space-around; /* Distribuye los botones equitativamente */
-      align-items: center;
-      z-index: 1000; /* Asegura que el menú esté siempre por encima del contenido */
-      padding: 0 10px;
-    }
-
-    /* BOTONES DEL MENÚ: Define el aspecto de los iconos y el texto del menú */
-    .nav-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-decoration: none;
-      color: #666; /* Color gris para botones no seleccionados */
-      font-size: 0.7rem;
-      font-weight: 600;
-      transition: 0.2s;
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-
-    /* ESTADO ACTIVO: Color azul cuando estás en esa "página" o vista */
-    .nav-btn.active { color: #2962FF; }
-    .nav-btn i { font-size: 1.4rem; margin-bottom: 2px; }
-
-    /* VISTAS: Controla que solo se vea el contenido de la pestaña seleccionada */
-    .view { display: none; width: 100%; } /* Por defecto oculto */
-    .view.active { display: flex; flex-direction: column; align-items: center; } /* Se muestra si tiene la clase 'active' */
-
-    .container { padding: 20px 14px; gap: 20px; }
-
-    /* PRÓXIMAMENTE: Diseño para las secciones que aún no tienen contenido real */
-    .coming-soon {
-      height: 60vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #999;
-      text-align: center;
-    }
-    .coming-soon h2 { color: #333; margin-bottom: 10px; }
-
-    /* TARJETAS DE PASO 1 Y 2: Define bordes redondeados y anchos máximos */
-    .step, .result { width: 100%; max-width: 500px; border-radius: 14px; }
-    .step { border: 1px solid var(--orange-bd); background: var(--orange-bg); }
-    .result { border: 1px solid var(--comp-bd); background: var(--comp-bg); }
-
-    .step-head, .result-head {
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-      padding: 16px; gap: 8px; border-bottom: 1px dashed var(--orange-bd);
-    }
-    .result-head { border-bottom-color: var(--comp-bd); }
-
-    /* ETIQUETAS (PASO 1 / PASO 2): Los rectángulos de colores arriba de cada sección */
-    .badge { background: #d477ba; color: #fff; padding: 4px 12px; border-radius: 8px; font-weight: bold; }
-    .result-head .badge { background: #d477ba; color: #0b2a35; }
-
-    .step-body, .result-body { padding: 16px; }
-
-    /* CUADRO DE TEXTO: Donde pegas los datos de WhatsApp */
-    textarea { min-height: 180px; width: 100%; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-family: monospace; }
-    
-    /* BOTONES GENERALES: Tamaño, relleno y forma de los botones de acción */
-    .btn { width: 100%; 
-           padding: 14px;
-           border-radius: 10px; 
-           border: none; 
-           font-weight: bold; 
-           cursor: pointer; 
-           font-size: 20px }
-    .btn.primary { background: #0b6368; color: #fff; }
-    .btn.light { background: #fff; border: 1px solid #ddd; }
-
-    /* FILA DE PRECARGA: Cómo se ve cada nadador cargado en la lista antes de guardar */
-    .inline-row {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      background: #fff; border: 1px solid var(--comp-bd); border-radius: 12px;
-      padding: 16px; margin-top: 12px; text-align: center;
-    }
-
-    /* MODAL (VENTANA EMERGENTE): Fondo oscuro y contenedor de la tabla de detalles */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 10px; z-index: 2000; }
-    .modal.open { display: flex; } /* Se activa con esta clase */
-    .modal-card { background: #fff; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-    .modal-head { padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 16px; overflow-y: auto; flex-grow: 1; }
-    
-    /* CHIPS DE MÉTRICAS: Las etiquetas de Mejor/Peor tiempo dentro del modal */
-    #metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; justify-content: center; }
-    .chip { background: #eee; padding: 5px 10px; border-radius: 15px; font-size: 0.85rem; }
-
-    /* RESPONSIVE: Si la pantalla es ancha, las filas de precarga se ponen horizontales en vez de verticales */
-    @media (min-width: 600px) { .inline-row { flex-direction: row; justify-content: space-between; text-align: left; } }
-  </style>
+  <link rel="stylesheet" href="../../shared/css/base.css" />
+  <link rel="stylesheet" href="./carga-tiempos.css" />
 </head>
+
 <body>
 
   <header>
@@ -163,13 +52,15 @@ Número ; Duration ; Vuelta
           <div class="subtitle">Revisión de precarga</div>
         </div>
         <div class="result-body">
-          <div id="summaryBody"></div> </div>
-          <button id="btnConfirm" class="btn primary" style="margin-top: 10px; background: #28a745;">✅ Confirmar y Guardar</button>
-          <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
+          <div id="summaryBody"></div>
+        </div>
+        <button id="btnConfirm" class="btn primary" style="margin-top: 10px; background: #28a745;">✅ Confirmar y
+          Guardar</button>
+        <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
       </section>
 
-          <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
-    
+      <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
+
     </div>
 
     <div id="view-historial" class="view">
@@ -198,201 +89,21 @@ Número ; Duration ; Vuelta
       </div>
       <div class="modal-body">
         <table style="width: 100%; border-collapse: collapse;">
-          <thead><tr><th>#</th><th>Tiempo</th><th>Vuelta</th></tr></thead>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tiempo</th>
+              <th>Vuelta</th>
+            </tr>
+          </thead>
           <tbody id="modalTbody" style="text-align: center;"></tbody>
         </table>
-        <div id="metrics"></div> </div>
+        <div id="metrics"></div>
+      </div>
     </div>
   </div>
 
-  <script>
-    // --- LÓGICA DE NAVEGACIÓN ---
-    // Cambia entre 'view-carga', 'view-historial', etc., ocultando las demás.
-    function showView(viewId, btn) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(viewId).classList.add('active');
-      btn.classList.add('active');
-    }
-
-    // --- LÓGICA DE DATOS ---
-    const SS_STAGING = 'nado_staging_session'; // Nombre de la "llave" para guardar datos temporales en el navegador
-    const $ = s => document.querySelector(s); // Atajo para no escribir document.querySelector siempre
-    
-    // Convierte el formato 00:00:00.000 a un número total de segundos (útil para cálculos matemáticos)
-    const toSec = (t) => {
-      const parts = (t || '0:0:0').split(':');
-      if (parts.length < 3) return 0;
-      const [h, m] = parts;
-      const [s, ms] = parts[2].split('.');
-      return (+h) * 3600 + (+m) * 60 + (+s) + ((+ms || 0) / 1000);
-    };
-
-    // Convierte un número de segundos de vuelta a formato de texto 00:00.000 para que el humano lo lea bien
-    const fmtMs = (sec) => {
-      const m = Math.floor(sec / 60), s = Math.floor(sec - m * 60), ms = Math.round((sec - m * 60 - s) * 1000);
-      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
-    };
-
-    // Carga los datos guardados en la memoria temporal (sessionStorage)
-    function loadStaging() { try { const s = sessionStorage.getItem(SS_STAGING); return s ? JSON.parse(s) : { items: [] }; } catch (e) { return { items: [] }; } }
-    
-    // Guarda los datos en la memoria temporal para que no se borren al refrescar por error
-    function saveStaging(obj) { sessionStorage.setItem(SS_STAGING, JSON.stringify(obj)); }
-
-    // FUNCIÓN CRÍTICA: Procesa el texto pegado. Soporta múltiples bloques si se pegan varios nadadores juntos.
-    function parseMultipleBlocks(rawText) {
-      // Divide el texto cada vez que encuentra la frase de inicio de Multi Timer
-      const blocks = rawText.split(/Multi Timer Lista de vueltas/i).filter(b => b.trim().length > 10);
-      return blocks.map(block => {
-        const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-        const metaLine = lines[0]; // La línea que tiene el nombre y la carrera
-        const mRace = metaLine.match(/\(([^)]+)\)/); // Busca lo que hay entre paréntesis para la carrera
-        const carrera = mRace ? mRace[1].trim() : "Carrera N/D";
-        const nadador = metaLine.split('(')[0].trim() || "Atleta N/D";
-        
-        // Busca dónde empiezan los números (debajo del encabezado Número;Duration;Vuelta)
-        const headerIdx = lines.findIndex(l => /n[uú]mero/i.test(l) && /vuelta/i.test(l));
-        const dataLines = lines.slice(headerIdx + 1);
-        const rows = [];
-        let lastDur = "";
-        
-        // Procesa cada línea de tiempos separada por punto y coma (;)
-        dataLines.forEach(l => {
-          if (l.includes(';')) {
-            const p = l.split(';').map(x => x.trim());
-            if (p.length >= 3) { 
-              rows.push({ lap: p[0], duration: p[1], vuelta: p[2] }); 
-              lastDur = p[2]; // Guarda el último tiempo para mostrarlo como "Total"
-            }
-          }
-        });
-        return { nadador, carrera, totalTxt: lastDur, rawRows: rows };
-      });
-    }
-
-    // Dibuja la lista de nadadores en la sección "Paso 2"
-    function renderStaging() {
-      const cont = $('#summaryBody'); cont.innerHTML = '';
-      loadStaging().items.forEach((it, idx) => {
-        const div = document.createElement('div'); div.className = 'inline-row';
-        div.innerHTML = `<div><b>${it.nadador}</b></div><div>${it.carrera}</div><div style="font-size:1.1rem; font-weight:700">${it.totalTxt}</div><button class="btn light" style="width:auto; padding:8px" onclick="viewDetails(${idx})">🔍 Ver</button>`;
-        cont.appendChild(div);
-      });
-    }
-
-    // Muestra los detalles de parciales en el modal. Aquí ocurre el cálculo de mejor/peor tiempo.
-    /*window.viewDetails = (idx) => {
-      const it = loadStaging().items[idx];
-      const modalTbody = $('#modalTbody');
-      const metricsBox = $('#metrics');
-      modalTbody.innerHTML = ''; metricsBox.innerHTML = '';
-      $('#modalTitle').textContent = it.nadador;
-      
-      // Convierte todas las vueltas a segundos para comparar
-      const secs = it.rawRows.map(r => toSec(r.vuelta));
-      const min = Math.min(...secs), max = Math.max(...secs), delta = max - min;
-
-      // Crea las filas de la tabla del modal
-      it.rawRows.forEach((r, i) => {
-        // Si el tiempo es el mínimo, pone fondo verde. Si es el máximo, fondo rojo.
-        const style = secs[i] === min ? 'background:#B7E1C2' : (secs[i] === max ? 'background:#F5B5B5' : '');
-        modalTbody.innerHTML += `<tr style="${style}"><td>${r.lap}</td><td>${r.duration}</td><td>${r.vuelta}</td></tr>`;
-      });
-
-      // Agrega los chips de resumen debajo de la tabla
-      const metrics = [['Mejor', fmtMs(min)], ['Peor', fmtMs(max)], ['Var Δ', fmtMs(delta)]];
-      metrics.forEach(([l, v]) => metricsBox.innerHTML += `<div class=\"chip\"><b>${l}:</b> ${v}</div>`);
-      
-      $('#modal').classList.add('open');
-      $('.modal-body').scrollTop = 0; // Vuelve arriba el scroll del modal por si estaba abajo
-    };*/
-
-
-
-   
-    window.viewDetails = (idx) => {
-      const it = loadStaging().items[idx];
-      const modalTbody = $('#modalTbody');
-      const metricsBox = $('#metrics');
-      modalTbody.innerHTML = ''; metricsBox.innerHTML = '';
-      $('#modalTitle').textContent = it.nadador;
-      
-      const secs = it.rawRows.map(r => toSec(r.vuelta));
-      
-      // --- LÓGICA DE ESTADÍSTICAS ---
-      const sorted = [...secs].sort((a, b) => a - b);
-      
-      // 1. Cálculo de Mediana
-      const mid = Math.floor(sorted.length / 2);
-      const mediana = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-
-      // 2. Límites para Top 3 (Mejores y Peores)
-      const topMejoresLimite = sorted[2]; 
-      const topPeoresLimite = sorted[sorted.length - 3]; 
-
-      // --- RENDERIZADO DE LA TABLA ---
-      it.rawRows.forEach((r, i) => {
-        const val = secs[i];
-        let style = '';
-        let icono = '';
-        
-        if (val <= topMejoresLimite) {
-          style = 'background:#B7E1C2; font-weight:bold;'; // Verde
-        } else if (val >= topPeoresLimite) {
-          style = 'background:#F5B5B5;'; // Rojo
-        }
-
-        modalTbody.innerHTML += `
-          <tr style="${style}">
-            <td>${r.lap}</td>
-            <td>${r.duration}</td>
-            <td>${r.vuelta}${icono}</td>
-          </tr>`;
-      });
-
-      // --- RENDERIZADO DE CHIPS ---
-      metricsBox.innerHTML = `
-        <div class="chip"><b>Tiempo Total:</b> <span style="font-size:1.1rem">${it.totalTxt}</span></div>
-        <div class="chip"><b>Mediana:</b> ${fmtMs(mediana)}</div>
-      `;
-      
-      $('#modal').classList.add('open');
-      $('.modal-body').scrollTop = 0;
-    };
-
-
-
-
-
-
-
-
-
-    // Evento al tocar "Cargar tiempos"
-    $('#btnLoad').addEventListener('click', () => {
-      const results = parseMultipleBlocks($('#txtRaw').value);
-      if (results.length) {
-        const st = loadStaging(); st.items.push(...results); // Agrega los nuevos nadadores a la lista existente
-        saveStaging(st);
-        $('#txtRaw').value = ''; // Limpia el área de texto
-        renderStaging(); // Redibuja la lista
-        $('#status').textContent = `✔ ${results.length} cargados`;
-      }
-    });
-
-    // Evento al tocar "Confirmar y Guardar"
-    $('#btnConfirm').addEventListener('click', () => {
-      sessionStorage.removeItem(SS_STAGING); // Borra la precarga
-      renderStaging(); // Limpia la pantalla
-      alert('¡Guardado!');
-    });
-
-    // Cierra el modal
-    $('#btnClose').addEventListener('click', () => $('#modal').classList.remove('open'));
-
-    // Ejecuta al iniciar para mostrar datos si ya había algo cargado antes de refrescar
-    renderStaging();
-  </script>
+  <script src="./carga-tiempos.js"></script>
 </body>
+
 </html>
