@@ -1,0 +1,226 @@
+:root {
+    --bg: #000000;
+    --card: #1a1a1a;
+    --accent: #00e676;
+    --pause: #ffffff;
+    --text: #ffffff;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 5px;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header con Menu */
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 5px 0;
+}
+
+#main-clock {
+    font-size: 2.5rem;
+    font-family: monospace;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.menu-container {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.dots-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: #333;
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    min-width: 150px;
+}
+
+.dropdown button {
+    background: none;
+    color: white;
+    width: 100%;
+    text-align: left;
+    padding: 12px;
+    border: none;
+    font-size: 0.9rem;
+}
+
+.setup-zone {
+    text-align: center;
+    padding: 20px;
+    flex: 1;
+}
+
+.lanes-grid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lane-card {
+    background: var(--card);
+    display: flex;
+    flex-direction: column;
+    min-height: 14.5vh;
+    border-radius: 8px;
+    padding: 12px 8px;
+    box-sizing: border-box;
+    gap: 6px;
+}
+
+.lane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.lane-input {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 0.8rem;
+    width: 60%;
+    text-transform: uppercase;
+}
+
+.last-lap-display {
+    font-size: 1.35rem;
+    color: var(--accent);
+    font-family: monospace;
+}
+
+.btn-group {
+    flex-direction: column;
+    /* antes era fila */
+    align-items: stretch;
+    /* que ocupen todo el ancho */
+}
+
+button {
+    border: none;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-lap {
+    flex: 1;
+    min-height: 56px;
+    font-size: 1.25rem;
+}
+
+.btn-pause {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 0;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pause);
+    color: #111;
+    font-size: 1rem;
+}
+
+.btn-pause {
+    background: var(--pause);
+    color: rgb(252, 0, 0);
+}
+
+.btn-start-global {
+    background: var(--accent);
+    color: black;
+    padding: 20px;
+    font-size: 1.5rem;
+    width: 100%;
+    margin-top: 20px;
+}
+
+button:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+.active-lane {
+    border-left: 4px solid var(--accent);
+}
+
+.paused-lane {
+    border-left: 4px solid var(--pause);
+    opacity: 0.6;
+}
+
+/* Override: parciales (verde) mas grandes */
+.last-lap-display {
+    font-size: 1.35rem !important;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+/* Centra el parcial en el alto de la card */
+.lane-card {
+    position: relative;
+    /* habilita posicionar hijos en absoluto */
+}
+
+/* Contenedor a la derecha, centrado vertical */
+.lap-display {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+/* Linea superior: acumulado (verde) */
+.lap-display .last-lap-display {
+    font-size: 1.35rem;
+    /* ya venias usandolo grande */
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--accent);
+    /* tu verde actual */
+}
+
+/* Linea inferior: Vuelta (duracion del lap) */
+.lap-display .last-lap-diff {
+    font-size: 0.95rem;
+    line-height: 1.05;
+    color: #8ef5a1;
+    /* verde mas claro; ajusta a gusto */
+    opacity: .9;
+    font-family: monospace;
+    /* opcional, queda bien para tiempos */
+}

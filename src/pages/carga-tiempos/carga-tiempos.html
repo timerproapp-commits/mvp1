@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nado • App</title>
+  <link rel="stylesheet" href="../../shared/css/base.css" />
+  <link rel="stylesheet" href="./carga-tiempos.css" />
+</head>
+
+<body>
+
+  <header>
+    <button class="nav-btn active" onclick="showView('view-carga', this)">
+      <i>⬆️</i>
+      <span>Cargar</span>
+    </button>
+    <button class="nav-btn" onclick="showView('view-historial', this)">
+      <i>📊</i>
+      <span>Historial</span>
+    </button>
+    <button class="nav-btn" onclick="showView('view-entrenos', this)">
+      <i>🏊</i>
+      <span>Entrenos</span>
+    </button>
+  </header>
+
+  <main class="container">
+
+    <div id="view-carga" class="view active">
+      <section class="step">
+        <div class="step-head">
+          <span class="badge">PASO 1</span>
+          <div class="subtitle">Pegá bloques de Multi Timer</div>
+        </div>
+        <div class="step-body">
+          <textarea id="txtRaw" placeholder="Pega aquí...">Multi Timer Lista de vueltas
+Facu Z3/Z2 (1000m)
+Número ; Duration ; Vuelta
+1 ; 00:01:56.622 ; 00:01:56.622
+2 ; 00:03:49.989 ; 00:01:53.367
+10 ; 00:20:32.311 ; 00:01:55.370</textarea>
+          <button id="btnLoad" class="btn primary" style="margin-top: 15px;">⬆️ Cargar tiempos</button>
+          <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
+        </div>
+      </section>
+
+      <section class="result" style="margin-top: 20px;">
+        <div class="result-head">
+          <span class="badge">PASO 2</span>
+          <div class="subtitle">Revisión de precarga</div>
+        </div>
+        <div class="result-body">
+          <div id="summaryBody"></div>
+        </div>
+        <button id="btnConfirm" class="btn primary" style="margin-top: 10px; background: #28a745;">✅ Confirmar y
+          Guardar</button>
+        <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
+      </section>
+
+      <div id="status" class="help" style="margin-top: 10px; text-align: center;"></div>
+
+    </div>
+
+    <div id="view-historial" class="view">
+      <div class="coming-soon">
+        <i>📊</i>
+        <h2>Historial</h2>
+        <p>Próximamente: Podrás filtrar y comparar todos los tiempos guardados.</p>
+      </div>
+    </div>
+
+    <div id="view-entrenos" class="view">
+      <div class="coming-soon">
+        <i>🏊</i>
+        <h2>Entrenamientos</h2>
+        <p>Próximamente: Planificación y series del equipo.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div id="modalTitle" style="font-weight: 800;">Detalles</div>
+        <button class="btn light" id="btnClose" style="width: auto; padding: 5px 15px;">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tiempo</th>
+              <th>Vuelta</th>
+            </tr>
+          </thead>
+          <tbody id="modalTbody" style="text-align: center;"></tbody>
+        </table>
+        <div id="metrics"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./carga-tiempos.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SwimCoach Pro - Final UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="./cronometro.css">
+
+</head>
+
+<body>
+
+    <div id="setup" class="setup-zone">
+        <h2>Nadadores: <input type="number" id="num-swimmers" value="7" style="width:50px; font-size: 1.5rem;"></h2>
+        <button class="btn-start-global" onclick="initRace()">PREPARAR</button>
+    </div>
+
+    <div class="header" id="header-ui" style="display:none;">
+        <div id="main-clock">00:00.00</div>
+        <div class="menu-container">
+            <button class="dots-btn" onclick="toggleMenu()">⋮</button>
+            <div class="dropdown" id="myDropdown">
+                <button onclick="downloadCSV()">Exportar CSV</button>
+                <button onclick="location.reload()" style="color: #ff5252;">Reiniciar Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="run-controls" style="display:none; padding: 10px;">
+        <button class="btn-start-global" onclick="startGlobalTimer()">¡START!</button>
+    </div>
+
+    <div class="lanes-grid" id="lanes-container"></div>
+
+    <script src="./cronometro.js"></script>
+</body>
+
+</html>
