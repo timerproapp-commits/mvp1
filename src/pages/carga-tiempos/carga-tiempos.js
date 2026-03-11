@@ -9,6 +9,7 @@ function showView(viewId, btn) {
 
 // --- LÓGICA DE DATOS ---
 const SS_STAGING = 'nado_staging_session'; // Nombre de la "llave" para guardar datos temporales en el navegador
+const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 const $ = s => document.querySelector(s); // Atajo para no escribir document.querySelector siempre
 
 // Convierte el formato 00:00:00.000 a un número total de segundos (útil para cálculos matemáticos)
@@ -156,4 +157,23 @@ $('#btnConfirm').addEventListener('click', () => {
 $('#btnClose').addEventListener('click', () => $('#modal').classList.remove('open'));
 
 // Ejecuta al iniciar para mostrar datos si ya había algo cargado antes de refrescar
+function hydrateImportedCsv() {
+    const importedCsv = localStorage.getItem(IMPORT_CSV_BUFFER_KEY);
+    if (!importedCsv) return;
+
+    const txtRaw = $('#txtRaw');
+    if (txtRaw) {
+        txtRaw.value = importedCsv;
+        txtRaw.focus();
+    }
+
+    const status = $('#status');
+    if (status) {
+        status.textContent = 'CSV pegado automaticamente desde Cronometro.';
+    }
+
+    localStorage.removeItem(IMPORT_CSV_BUFFER_KEY);
+}
+
+hydrateImportedCsv();
 renderStaging();
