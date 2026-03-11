@@ -151,6 +151,25 @@ body {
     margin-bottom: 6px;
 }
 
+.lap-counter {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 999px;
+    border: 1px solid #2d5f3a;
+    background: #0b2014;
+    color: #9bf7bb;
+    font-weight: 800;
+    font-size: 0.9rem;
+    line-height: 26px;
+    text-align: center;
+    font-family: monospace;
+    z-index: 2;
+}
+
 .lane-input {
     background: transparent;
     border: none;

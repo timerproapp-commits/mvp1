@@ -45,6 +45,7 @@ function initRace() {
             <div class="lane-card" id="card-${i}">
                 <div class="lane-header">
                     <input type="text" class="lane-input" value="NADADOR ${i}" id="name-${i}">
+                    <div class="lap-counter" id="laps-count-${i}">0</div>
                     <div class="lap-display">
                         <div class="last-lap-display" id="last-${i}">00:00.00</div>
                         <div class="last-lap-diff" id="lastdiff-${i}">00:00.00</div>
@@ -109,6 +110,7 @@ function recordLap(id) {
     s.laps.push(timeStr);
     document.getElementById(`last-${id}`).innerText = timeStr;
     document.getElementById(`lastdiff-${id}`).innerText = lapStr;
+    document.getElementById(`laps-count-${id}`).innerText = String(s.laps.length);
 }
 
 function toggleSwimmer(id) {
