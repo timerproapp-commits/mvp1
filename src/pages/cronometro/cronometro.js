@@ -2,6 +2,9 @@ let startTime = null;
 let timerInterval = null;
 let swimmers = [];
 let currentRaceName = 'Carrera N/D';
+let raceStarted = false;
+let nextSwimmerId = 1;
+const LONG_PRESS_MS = 900;
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 
 function toggleMenu() {
@@ -38,33 +41,105 @@ function initRace() {
     const container = document.getElementById('lanes-container');
     container.innerHTML = '';
     swimmers = [];
+    raceStarted = false;
+    nextSwimmerId = 1;
 
-    for (let i = 1; i <= num; i++) {
-        swimmers.push({ id: i, laps: [], final: null, active: true });
-        container.innerHTML += `
-            <div class="lane-card" id="card-${i}">
-                <div class="lane-header">
-                    <input type="text" class="lane-input" value="NADADOR ${i}" id="name-${i}">
-                    <div class="lap-counter" id="laps-count-${i}">0</div>
-                    <div class="lap-display">
-                        <div class="last-lap-display" id="last-${i}">00:00.00</div>
-                        <div class="last-lap-diff" id="lastdiff-${i}">00:00.00</div>
-                    </div>
-                </div>
-                <div class="btn-group">
-                    <button class="btn-lap" onclick="recordLap(${i})" id="lap-${i}" disabled>PARCIAL</button>
-                    <button class="btn-pause" onclick="toggleSwimmer(${i})" id="pause-${i}" disabled>🔴</button>
-                </div>
-            </div>
-        `;
+    for (let i = 0; i < num; i++) {
+        addSwimmer();
     }
 
     document.getElementById('setup').style.display = 'none';
     document.getElementById('header-ui').style.display = 'flex';
     document.getElementById('run-controls').style.display = 'block';
+    document.getElementById('add-swimmer-wrap').style.display = 'block';
+}
+
+function createSwimmerCard(swimmerId, defaultName) {
+    return `
+        <div class="lane-card" id="card-${swimmerId}">
+            <div class="lane-header">
+                <input type="text" class="lane-input" value="${defaultName}" id="name-${swimmerId}">
+                <div class="lap-counter" id="laps-count-${swimmerId}">0</div>
+                <button class="delete-swimmer-btn" onclick="removeSwimmer(${swimmerId})">Eliminar</button>
+                <div class="lap-display">
+                    <div class="last-lap-display" id="last-${swimmerId}">00:00.00</div>
+                    <div class="last-lap-diff" id="lastdiff-${swimmerId}">00:00.00</div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-lap" onclick="recordLap(${swimmerId})" id="lap-${swimmerId}" disabled>PARCIAL</button>
+                <button class="btn-pause" onclick="toggleSwimmer(${swimmerId})" id="pause-${swimmerId}" disabled>🔴</button>
+            </div>
+        </div>
+    `;
+}
+
+function bindLongPressToCard(swimmerId) {
+    const card = document.getElementById(`card-${swimmerId}`);
+    if (!card) return;
+
+    let pressTimer = null;
+    const clearPressTimer = () => {
+        if (pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+    };
+
+    const onPressStart = () => {
+        if (raceStarted) return;
+        clearPressTimer();
+        pressTimer = setTimeout(() => {
+            hideDeleteOptions();
+            card.classList.add('show-delete');
+        }, LONG_PRESS_MS);
+    };
+
+    const onPressEnd = () => clearPressTimer();
+
+    card.addEventListener('pointerdown', onPressStart);
+    card.addEventListener('pointerup', onPressEnd);
+    card.addEventListener('pointerleave', onPressEnd);
+    card.addEventListener('pointercancel', onPressEnd);
+}
+
+function hideDeleteOptions() {
+    document.querySelectorAll('.lane-card.show-delete').forEach((card) => {
+        card.classList.remove('show-delete');
+    });
+}
+
+function addSwimmer() {
+    if (raceStarted) return;
+
+    const swimmerId = nextSwimmerId;
+    nextSwimmerId += 1;
+
+    const swimmerNumber = swimmers.length + 1;
+    swimmers.push({ id: swimmerId, laps: [], final: null, active: true });
+
+    const container = document.getElementById('lanes-container');
+    container.insertAdjacentHTML('beforeend', createSwimmerCard(swimmerId, `NADADOR ${swimmerNumber}`));
+    bindLongPressToCard(swimmerId);
+}
+
+function removeSwimmer(id) {
+    if (raceStarted) return;
+    if (swimmers.length <= 1) {
+        alert('Debe quedar al menos 1 nadador.');
+        return;
+    }
+
+    swimmers = swimmers.filter((sw) => sw.id !== id);
+    const card = document.getElementById(`card-${id}`);
+    if (card) card.remove();
 }
 
 function startGlobalTimer() {
+    raceStarted = true;
+    hideDeleteOptions();
+    document.getElementById('add-swimmer-wrap').style.display = 'none';
+
     startTime = Date.now();
     timerInterval = setInterval(() => {
         document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
@@ -150,6 +225,8 @@ function buildMultiTimerExportText() {
 
     const lines = [];
     swimmers.forEach((s) => {
+        if (!s.laps || s.laps.length === 0) return;
+
         const nombre = document.getElementById(`name-${s.id}`)?.value || `NADADOR ${s.id}`;
         const raceMeta = currentRaceName || 'Carrera N/D';
 
@@ -199,5 +276,8 @@ function downloadCSV() {
 window.onclick = function (event) {
     if (!event.target.matches('.dots-btn')) {
         document.getElementById('myDropdown').style.display = 'none';
+    }
+    if (!event.target.closest('.lane-card')) {
+        hideDeleteOptions();
     }
 };

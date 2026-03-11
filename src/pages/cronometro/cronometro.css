@@ -144,6 +144,26 @@ body {
     gap: 6px;
 }
 
+.delete-swimmer-btn {
+    position: absolute;
+    top: 44px;
+    right: 12px;
+    background: #651515;
+    color: #ffdede;
+    border: 1px solid #a83b3b;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    text-transform: none;
+    display: none;
+    z-index: 3;
+}
+
+.lane-card.show-delete .delete-swimmer-btn {
+    display: inline-block;
+}
+
 .lane-header {
     display: flex;
     justify-content: space-between;
@@ -232,6 +252,20 @@ button {
     font-size: 1.5rem;
     width: 100%;
     margin-top: 20px;
+}
+
+.add-swimmer-wrap {
+    padding: 8px 10px 12px;
+}
+
+.btn-add-swimmer {
+    width: 100%;
+    background: #113526;
+    color: #c8ffd9;
+    border: 1px dashed #2f8a59;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1rem;
 }
 
 button:active {
