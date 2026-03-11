@@ -12,11 +12,29 @@
 <body>
 
     <div id="setup" class="setup-zone">
-        <h2>Nadadores: <input type="number" id="num-swimmers" value="7" style="width:50px; font-size: 1.5rem;"></h2>
+        <h2 class="setup-title">Configurar cronometro</h2>
+        <div class="setup-form">
+            <label for="num-swimmers">Cantidad de nadadores *</label>
+            <input type="number" id="num-swimmers" min="1" step="1" value="7" required>
+
+            <label for="race-style">Estilo *</label>
+            <select id="race-style" required>
+                <option value="" selected disabled>Seleccionar estilo</option>
+                <option value="Mariposa">Mariposa</option>
+                <option value="Espalada">Espalada</option>
+                <option value="Pecho">Pecho</option>
+                <option value="Libre">Libre</option>
+            </select>
+
+            <label for="race-distance">Distancia *</label>
+            <input type="number" id="race-distance" min="1" step="1" placeholder="Ej: 100" required>
+        </div>
+        <div id="setup-error" class="setup-error" aria-live="polite"></div>
         <button class="btn-start-global" onclick="initRace()">PREPARAR</button>
     </div>
 
     <div class="header" id="header-ui" style="display:none;">
+        <div id="race-name" class="race-name">Carrera N/D</div>
         <div id="main-clock">00:00.00</div>
         <div class="menu-container">
             <button class="dots-btn" onclick="toggleMenu()">⋮</button>
