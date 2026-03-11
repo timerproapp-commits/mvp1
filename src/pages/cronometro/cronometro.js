@@ -1,6 +1,7 @@
 let startTime = null;
 let timerInterval = null;
 let swimmers = [];
+const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 
 function toggleMenu() {
     const dot = document.getElementById("myDropdown");
@@ -115,11 +116,7 @@ function toggleSwimmer(id) {
     }
 }
 
-function downloadCSV() {
-    // cerrar menu si estaba abierto
-    toggleMenu?.();
-
-    // helpers: MM:SS.cc <-> centesimas
+function buildMultiTimerExportText() {
     const parseToCentis = (t) => {
         const [mmss, cc = "00"] = String(t).split('.');
         const [mm = "00", ss = "00"] = (mmss || "").split(':');
@@ -137,12 +134,10 @@ function downloadCSV() {
     swimmers.forEach((s) => {
         const nombre = document.getElementById(`name-${s.id}`)?.value || `NADADOR ${s.id}`;
 
-        // Encabezado de bloque tipo Multi Timer
         lines.push("Multi Timer Lista de vueltas");
-        lines.push(nombre); // escribi aqui "Nombre y prueba" en el input
+        lines.push(nombre);
         lines.push("Numero ; Duration ; Vuelta");
 
-        // s.laps son tiempos ACUMULADOS -> la Vuelta = diff con el acumulado anterior
         let prev = 0;
         if (s.laps.length === 0 && s.final) {
             const dur = parseToCentis(s.final);
@@ -155,12 +150,24 @@ function downloadCSV() {
                 lines.push(`${idx + 1} ; ${fmtFromCentis(dur)} ; ${fmtFromCentis(lap)}`);
             });
         }
-
-        // linea en blanco opcional entre bloques:
-        // lines.push("");
     });
 
-    const blob = new Blob([lines.join("\r\n")], { type: "text/plain;charset=utf-8" });
+    return lines.join("\r\n");
+}
+
+function goToCargaTiempos() {
+    const exportText = buildMultiTimerExportText();
+    if (exportText.trim()) {
+        localStorage.setItem(IMPORT_CSV_BUFFER_KEY, exportText);
+    }
+    window.location.href = "../carga-tiempos/carga-tiempos.html";
+}
+
+function downloadCSV() {
+    // cerrar menu si estaba abierto
+    toggleMenu?.();
+
+    const blob = new Blob([buildMultiTimerExportText()], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
