@@ -42,6 +42,82 @@ function saveStaging(obj) {
     sessionStorage.setItem(SS_STAGING, JSON.stringify(obj));
 }
 
+function getStatusBox() {
+    return document.querySelector('#status');
+}
+
+function buildSummaryShareText() {
+    const items = loadStaging().items || [];
+    if (!items.length) return '';
+
+    const lines = [];
+    lines.push('Resumen de precarga - Timer Pro App');
+    lines.push(`Total nadadores: ${items.length}`);
+    lines.push('');
+
+    items.forEach((it, idx) => {
+        const vueltas = it.rawRows || [];
+        const secs = vueltas.map(r => toSec(r.vuelta)).filter(v => Number.isFinite(v));
+        const sorted = [...secs].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const mediana = sorted.length
+            ? (sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2)
+            : 0;
+
+        const topMejores = sorted.slice(0, 3).map(v => fmtMs(v));
+        const topPeores = sorted.slice(-3).reverse().map(v => fmtMs(v));
+
+        lines.push(`${idx + 1}. ${it.nadador}`);
+        lines.push(`Carrera: ${it.carrera}`);
+        lines.push(`Total: ${it.totalTxt || 'N/D'}`);
+        lines.push(`Parciales: ${vueltas.length}`);
+        lines.push(`Mediana: ${fmtMs(mediana)}`);
+        lines.push(`Top mejores: ${topMejores.join(', ') || 'N/D'}`);
+        lines.push(`Top peores: ${topPeores.join(', ') || 'N/D'}`);
+        lines.push('');
+    });
+
+    return lines.join('\n');
+}
+
+async function copySummaryToClipboard() {
+    const text = buildSummaryShareText();
+    const status = getStatusBox();
+    if (!text) {
+        if (status) status.textContent = 'No hay datos en la revision para copiar.';
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(text);
+        if (status) status.textContent = 'Resumen copiado al portapapeles.';
+    } catch (e) {
+        if (status) status.textContent = 'No se pudo copiar automaticamente. Intenta descargar TXT.';
+    }
+}
+
+function downloadSummaryTxt() {
+    const text = buildSummaryShareText();
+    const status = getStatusBox();
+    if (!text) {
+        if (status) status.textContent = 'No hay datos en la revision para descargar.';
+        return;
+    }
+
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resumen-precarga-${stamp}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    if (status) status.textContent = 'Resumen descargado en TXT.';
+}
+
 // FUNCIÓN CRÍTICA: Procesa el texto pegado. Soporta múltiples bloques si se pegan varios nadadores juntos.
 function parseMultipleBlocks(rawText) {
     // Divide el texto cada vez que encuentra la frase de inicio de Multi Timer
@@ -151,6 +227,14 @@ $('#btnConfirm').addEventListener('click', () => {
     sessionStorage.removeItem(SS_STAGING); // Borra la precarga
     renderStaging(); // Limpia la pantalla
     alert('¡Guardado!');
+});
+
+$('#btnCopySummary').addEventListener('click', () => {
+    copySummaryToClipboard();
+});
+
+$('#btnDownloadSummary').addEventListener('click', () => {
+    downloadSummaryTxt();
 });
 
 // Cierra el modal
