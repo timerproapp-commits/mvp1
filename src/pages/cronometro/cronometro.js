@@ -251,12 +251,16 @@ function buildMultiTimerExportText() {
     return lines.join('\r\n');
 }
 
-function goToCargaTiempos() {
+function goToTimerProAnalisis() {
     const exportText = buildMultiTimerExportText();
     if (exportText.trim()) {
         localStorage.setItem(IMPORT_CSV_BUFFER_KEY, exportText);
     }
     window.location.href = '../carga-tiempos/carga-tiempos.html';
+}
+
+function goToCargaExterna() {
+    window.location.href = '../carga-externa/carga-externa.html';
 }
 
 function downloadCSV() {

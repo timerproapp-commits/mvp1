@@ -209,19 +209,6 @@ window.viewDetails = (idx) => {
     $('.modal-body').scrollTop = 0;
 };
 
-// Evento al tocar "Cargar tiempos"
-$('#btnLoad').addEventListener('click', () => {
-    const results = parseMultipleBlocks($('#txtRaw').value);
-    if (results.length) {
-        const st = loadStaging();
-        st.items.push(...results); // Agrega los nuevos nadadores a la lista existente
-        saveStaging(st);
-        $('#txtRaw').value = ''; // Limpia el área de texto
-        renderStaging(); // Redibuja la lista
-        $('#status').textContent = `✔ ${results.length} cargados`;
-    }
-});
-
 // Evento al tocar "Confirmar y Guardar"
 $('#btnConfirm').addEventListener('click', () => {
     sessionStorage.removeItem(SS_STAGING); // Borra la precarga
@@ -240,24 +227,27 @@ $('#btnDownloadSummary').addEventListener('click', () => {
 // Cierra el modal
 $('#btnClose').addEventListener('click', () => $('#modal').classList.remove('open'));
 
-// Ejecuta al iniciar para mostrar datos si ya había algo cargado antes de refrescar
-function hydrateImportedCsv() {
+// Ejecuta al iniciar para cargar automaticamente datos importados desde Cronometro o Carga Externa
+function importBufferedCsvToStaging() {
     const importedCsv = localStorage.getItem(IMPORT_CSV_BUFFER_KEY);
     if (!importedCsv) return;
 
-    const txtRaw = $('#txtRaw');
-    if (txtRaw) {
-        txtRaw.value = importedCsv;
-        txtRaw.focus();
+    const results = parseMultipleBlocks(importedCsv);
+    if (results.length) {
+        const st = loadStaging();
+        st.items.push(...results);
+        saveStaging(st);
     }
 
     const status = $('#status');
     if (status) {
-        status.textContent = 'CSV pegado automaticamente desde Cronometro.';
+        status.textContent = results.length
+            ? `CSV importado automaticamente (${results.length} nadador(es)).`
+            : 'No se detectaron bloques validos en el CSV importado.';
     }
 
     localStorage.removeItem(IMPORT_CSV_BUFFER_KEY);
 }
 
-hydrateImportedCsv();
+importBufferedCsvToStaging();
 renderStaging();
