@@ -263,6 +263,10 @@ function goToCargaExterna() {
     window.location.href = '../carga-externa/carga-externa.html';
 }
 
+function goToListaNadadores() {
+    window.location.href = '../lista-nadadores/lista-nadadores.html';
+}
+
 function downloadCSV() {
     toggleMenu?.();
 
