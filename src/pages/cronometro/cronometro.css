@@ -195,8 +195,48 @@ body {
     border: none;
     color: #888;
     font-size: 0.8rem;
+    width: 100%;
+    text-transform: none;
+}
+
+.name-slot {
     width: 60%;
-    text-transform: uppercase;
+}
+
+.lane-select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.lane-select.is-placeholder {
+    color: #888;
+}
+
+.lane-select:not(.is-placeholder) {
+    color: #d5d5d5;
+}
+
+.lane-select option {
+    color: #111;
+    background: #fff;
+}
+
+.custom-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.name-back-btn {
+    background: #2b2b2b;
+    color: #f0f0f0;
+    border: 1px solid #4d4d4d;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    text-transform: none;
 }
 
 .last-lap-display {

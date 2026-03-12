@@ -6,6 +6,27 @@ let raceStarted = false;
 let nextSwimmerId = 1;
 const LONG_PRESS_MS = 900;
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
+const CLUB_SWIMMERS_MOCK = [
+    { id: 1, nombre: 'Lucia', apellido: 'Benitez', fechaNacimiento: '2015-09-21', sexo: 'F' },
+    { id: 2, nombre: 'Tomas', apellido: 'Aguirre', fechaNacimiento: '2012-03-04', sexo: 'M' },
+    { id: 3, nombre: 'Camila', apellido: 'Soria', fechaNacimiento: '2009-11-18', sexo: 'F' },
+    { id: 4, nombre: 'Bruno', apellido: 'Maldonado', fechaNacimiento: '2006-07-30', sexo: 'M' },
+    { id: 5, nombre: 'Alex', apellido: 'Roldan', fechaNacimiento: '2004-02-12', sexo: 'X' },
+    { id: 6, nombre: 'Valentina', apellido: 'Pereyra', fechaNacimiento: '1999-05-09', sexo: 'F' }
+];
+
+function escapeHtml(text) {
+    return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getSwimmerState(swimmerId) {
+    return swimmers.find((sw) => sw.id === swimmerId);
+}
 
 function toggleMenu() {
     const dot = document.getElementById('myDropdown');
@@ -54,11 +75,11 @@ function initRace() {
     document.getElementById('add-swimmer-wrap').style.display = 'block';
 }
 
-function createSwimmerCard(swimmerId, defaultName) {
+function createSwimmerCard(swimmerId) {
     return `
         <div class="lane-card" id="card-${swimmerId}">
             <div class="lane-header">
-                <input type="text" class="lane-input" value="${defaultName}" id="name-${swimmerId}">
+                <div class="name-slot" id="name-slot-${swimmerId}"></div>
                 <div class="lap-counter" id="laps-count-${swimmerId}">0</div>
                 <button class="delete-swimmer-btn" onclick="removeSwimmer(${swimmerId})">Eliminar</button>
                 <div class="lap-display">
@@ -73,6 +94,78 @@ function createSwimmerCard(swimmerId, defaultName) {
         </div>
     `;
 }
+
+function renderNameSlot(swimmerId) {
+    const swimmer = getSwimmerState(swimmerId);
+    const slot = document.getElementById(`name-slot-${swimmerId}`);
+    if (!swimmer || !slot) return;
+
+    if (swimmer.nameMode === 'custom') {
+        slot.innerHTML = `
+            <div class="custom-name-wrap">
+                <input
+                    type="text"
+                    class="lane-input"
+                    id="name-custom-${swimmerId}"
+                    placeholder="Escribe otro nadador"
+                    value="${escapeHtml(swimmer.customName)}"
+                    oninput="onCustomNameInput(${swimmerId}, this.value)">
+                <button class="name-back-btn" id="name-back-${swimmerId}" onclick="switchToClubList(${swimmerId})">Lista</button>
+            </div>
+        `;
+        return;
+    }
+
+    const optionsHtml = CLUB_SWIMMERS_MOCK.map((clubSwimmer) => {
+        const selected = String(swimmer.selectedClubId) === String(clubSwimmer.id) ? 'selected' : '';
+        return `<option value="${clubSwimmer.id}" ${selected}>${clubSwimmer.nombre} ${clubSwimmer.apellido} (${clubSwimmer.sexo})</option>`;
+    }).join('');
+
+    const placeholderClass = swimmer.selectedClubId ? '' : 'is-placeholder';
+    slot.innerHTML = `
+        <select
+            id="name-select-${swimmerId}"
+            class="lane-input lane-select ${placeholderClass}"
+            onchange="onClubSelectChange(${swimmerId}, this.value)">
+            <option value="" ${swimmer.selectedClubId ? '' : 'selected'}>Seleccionar nadador</option>
+            <option value="other">Otro nadador</option>
+            ${optionsHtml}
+        </select>
+    `;
+}
+
+window.onClubSelectChange = (swimmerId, value) => {
+    const swimmer = getSwimmerState(swimmerId);
+    if (!swimmer) return;
+
+    if (value === 'other') {
+        swimmer.nameMode = 'custom';
+        swimmer.customName = '';
+        swimmer.selectedClubId = '';
+        renderNameSlot(swimmerId);
+        return;
+    }
+
+    swimmer.nameMode = 'club';
+    swimmer.customName = '';
+    swimmer.selectedClubId = value || '';
+    renderNameSlot(swimmerId);
+};
+
+window.onCustomNameInput = (swimmerId, value) => {
+    const swimmer = getSwimmerState(swimmerId);
+    if (!swimmer) return;
+    swimmer.customName = value;
+};
+
+window.switchToClubList = (swimmerId) => {
+    const swimmer = getSwimmerState(swimmerId);
+    if (!swimmer) return;
+    swimmer.nameMode = 'club';
+    swimmer.customName = '';
+    swimmer.selectedClubId = '';
+    renderNameSlot(swimmerId);
+};
 
 function bindLongPressToCard(swimmerId) {
     const card = document.getElementById(`card-${swimmerId}`);
@@ -115,11 +208,19 @@ function addSwimmer() {
     const swimmerId = nextSwimmerId;
     nextSwimmerId += 1;
 
-    const swimmerNumber = swimmers.length + 1;
-    swimmers.push({ id: swimmerId, laps: [], final: null, active: true });
+    swimmers.push({
+        id: swimmerId,
+        laps: [],
+        final: null,
+        active: true,
+        nameMode: 'club',
+        selectedClubId: '',
+        customName: ''
+    });
 
     const container = document.getElementById('lanes-container');
-    container.insertAdjacentHTML('beforeend', createSwimmerCard(swimmerId, `NADADOR ${swimmerNumber}`));
+    container.insertAdjacentHTML('beforeend', createSwimmerCard(swimmerId));
+    renderNameSlot(swimmerId);
     bindLongPressToCard(swimmerId);
 }
 
@@ -136,6 +237,12 @@ function removeSwimmer(id) {
 }
 
 function startGlobalTimer() {
+    const validationError = validateBeforeStart();
+    if (validationError) {
+        alert(validationError);
+        return;
+    }
+
     raceStarted = true;
     hideDeleteOptions();
     document.getElementById('add-swimmer-wrap').style.display = 'none';
@@ -146,10 +253,61 @@ function startGlobalTimer() {
     }, 10);
     document.getElementById('run-controls').style.display = 'none';
     swimmers.forEach((s) => {
+        setNameControlsDisabled(s.id, true);
         document.getElementById(`lap-${s.id}`).disabled = false;
         document.getElementById(`pause-${s.id}`).disabled = false;
         document.getElementById(`card-${s.id}`).classList.add('active-lane');
     });
+}
+
+function setNameControlsDisabled(swimmerId, disabled) {
+    const select = document.getElementById(`name-select-${swimmerId}`);
+    const customInput = document.getElementById(`name-custom-${swimmerId}`);
+    const backBtn = document.getElementById(`name-back-${swimmerId}`);
+    if (select) select.disabled = disabled;
+    if (customInput) customInput.disabled = disabled;
+    if (backBtn) backBtn.disabled = disabled;
+}
+
+function validateBeforeStart() {
+    const selectedClubIds = new Set();
+
+    for (let i = 0; i < swimmers.length; i++) {
+        const swimmer = swimmers[i];
+        const laneNumber = i + 1;
+
+        if (swimmer.nameMode === 'custom') {
+            if (!(swimmer.customName || '').trim()) {
+                return `Completa el nombre de "Otro nadador" en el carril ${laneNumber}.`;
+            }
+            continue;
+        }
+
+        if (!swimmer.selectedClubId) {
+            return `Selecciona un nadador para el carril ${laneNumber}.`;
+        }
+
+        if (selectedClubIds.has(swimmer.selectedClubId)) {
+            return 'No se puede repetir el mismo nadador del club en dos carriles.';
+        }
+        selectedClubIds.add(swimmer.selectedClubId);
+    }
+
+    return '';
+}
+
+function resolveSwimmerName(swimmer) {
+    if (swimmer.nameMode === 'custom') {
+        const custom = (swimmer.customName || '').trim();
+        return custom || `NADADOR ${swimmer.id}`;
+    }
+
+    const clubSwimmer = CLUB_SWIMMERS_MOCK.find((item) => String(item.id) === String(swimmer.selectedClubId));
+    if (clubSwimmer) {
+        return `${clubSwimmer.nombre} ${clubSwimmer.apellido}`;
+    }
+
+    return `NADADOR ${swimmer.id}`;
 }
 
 function formatTime(ms) {
@@ -227,7 +385,7 @@ function buildMultiTimerExportText() {
     swimmers.forEach((s) => {
         if (!s.laps || s.laps.length === 0) return;
 
-        const nombre = document.getElementById(`name-${s.id}`)?.value || `NADADOR ${s.id}`;
+        const nombre = resolveSwimmerName(s);
         const raceMeta = currentRaceName || 'Carrera N/D';
 
         lines.push('Multi Timer Lista de vueltas');
