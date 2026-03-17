@@ -498,17 +498,40 @@ function buildMultiTimerExportText() {
     return lines.join('\r\n');
 }
 
-function goToTimerProAnalisis() {
+function openAnalisisConfirmModal() {
+    const modal = document.getElementById('confirm-analisis-modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+}
+
+function closeAnalisisConfirmModal() {
+    const modal = document.getElementById('confirm-analisis-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+}
+
+function proceedToAnalisis() {
     const exportText = buildMultiTimerExportText();
     if (exportText.trim()) {
         localStorage.setItem(IMPORT_CSV_BUFFER_KEY, exportText);
     }
-    saveCronoState();
+
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    sessionStorage.removeItem(CRONO_STATE_KEY);
+
     if (window.TPANavigation) {
-        window.TPANavigation.goTo('cargaTiempos', { from: 'cronometro' });
+        window.TPANavigation.goTo('cargaTiempos', { from: 'cronometro', locked: '1' });
         return;
     }
     window.location.href = '../carga-tiempos/carga-tiempos.html';
+}
+
+function goToTimerProAnalisis() {
+    openAnalisisConfirmModal();
 }
 
 function goToHome() {
@@ -535,11 +558,26 @@ function downloadCSV() {
 
 restoreCronoState();
 
+const confirmNoBtn = document.getElementById('btnConfirmNo');
+const confirmSiBtn = document.getElementById('btnConfirmSi');
+if (confirmNoBtn) {
+    confirmNoBtn.addEventListener('click', closeAnalisisConfirmModal);
+}
+if (confirmSiBtn) {
+    confirmSiBtn.addEventListener('click', () => {
+        closeAnalisisConfirmModal();
+        proceedToAnalisis();
+    });
+}
+
 window.onclick = function (event) {
     if (!event.target.matches('.dots-btn')) {
         document.getElementById('myDropdown').style.display = 'none';
     }
     if (!event.target.closest('.lane-card')) {
         hideDeleteOptions();
+    }
+    if (event.target && event.target.id === 'confirm-analisis-modal') {
+        closeAnalisisConfirmModal();
     }
 };
