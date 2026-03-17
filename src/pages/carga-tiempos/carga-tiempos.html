@@ -11,25 +11,11 @@
 
 <body>
 
-  <header>
-    <button class="nav-btn active" onclick="showView('view-carga', this)">
-      <i>⬆️</i>
-      <span>Cargar</span>
-    </button>
-    <button class="nav-btn" onclick="showView('view-historial', this)">
-      <i>📊</i>
-      <span>Historial</span>
-    </button>
-    <button class="nav-btn" onclick="showView('view-entrenos', this)">
-      <i>🏊</i>
-      <span>Entrenos</span>
-    </button>
-  </header>
-
   <main class="container">
 
     <div id="view-carga" class="view active">
       <section class="result" style="margin-top: 20px;">
+        <button id="btnBack" class="btn light" style="width: 100%; margin-bottom: 12px;">← Volver</button>
         <div class="result-head">
           <span class="badge">REVISION</span>
           <div class="subtitle">Revisión de precarga</div>
@@ -44,24 +30,10 @@
         </div>
         <button id="btnConfirm" class="btn primary" style="margin-top: 10px; background: #28a745;">✅ Confirmar y
           Guardar</button>
+        <button id="btnNewLoad" class="btn primary" style="margin-top: 10px; display: none;">Cargar nuevos
+          tiempos</button>
       </section>
 
-    </div>
-
-    <div id="view-historial" class="view">
-      <div class="coming-soon">
-        <i>📊</i>
-        <h2>Historial</h2>
-        <p>Próximamente: Podrás filtrar y comparar todos los tiempos guardados.</p>
-      </div>
-    </div>
-
-    <div id="view-entrenos" class="view">
-      <div class="coming-soon">
-        <i>🏊</i>
-        <h2>Entrenamientos</h2>
-        <p>Próximamente: Planificación y series del equipo.</p>
-      </div>
     </div>
 
   </main>
@@ -88,6 +60,7 @@
     </div>
   </div>
 
+  <script src="../../shared/js/navigation.js"></script>
   <script src="./carga-tiempos.js"></script>
 </body>
 

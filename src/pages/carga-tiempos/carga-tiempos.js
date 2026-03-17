@@ -1,12 +1,3 @@
-// --- LÓGICA DE NAVEGACIÓN ---
-// Cambia entre 'view-carga', 'view-historial', etc., ocultando las demás.
-function showView(viewId, btn) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    btn.classList.add('active');
-}
-
 // --- LÓGICA DE DATOS ---
 const SS_STAGING = 'nado_staging_session'; // Nombre de la "llave" para guardar datos temporales en el navegador
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
@@ -214,14 +205,43 @@ $('#btnConfirm').addEventListener('click', () => {
     sessionStorage.removeItem(SS_STAGING); // Borra la precarga
     renderStaging(); // Limpia la pantalla
     alert('¡Guardado!');
+    onFlowComplete();
 });
 
 $('#btnCopySummary').addEventListener('click', () => {
     copySummaryToClipboard();
+    onFlowComplete();
 });
 
 $('#btnDownloadSummary').addEventListener('click', () => {
     downloadSummaryTxt();
+    onFlowComplete();
+});
+
+function onFlowComplete() {
+    const newLoadBtn = $('#btnNewLoad');
+    if (newLoadBtn) newLoadBtn.style.display = 'block';
+}
+
+$('#btnNewLoad').addEventListener('click', () => {
+    sessionStorage.removeItem(SS_STAGING);
+    sessionStorage.removeItem('nado_crono_state');
+    sessionStorage.removeItem('nado_csv_textarea_draft');
+    localStorage.removeItem(IMPORT_CSV_BUFFER_KEY);
+
+    if (window.TPANavigation) {
+        window.TPANavigation.goTo('home');
+        return;
+    }
+    window.location.href = '../../app/index.html';
+});
+
+$('#btnBack').addEventListener('click', () => {
+    if (window.TPANavigation) {
+        window.TPANavigation.goBack('home');
+        return;
+    }
+    window.location.href = '../../app/index.html';
 });
 
 // Cierra el modal

@@ -31,6 +31,8 @@
         </div>
         <div id="setup-error" class="setup-error" aria-live="polite"></div>
         <button class="btn-start-global" onclick="initRace()">PREPARAR</button>
+        <button class="btn-start-global" id="btnVolverSetup" onclick="goToHome()"
+            style="background:#333; margin-top:8px;">← Volver al inicio</button>
     </div>
 
     <div class="header" id="header-ui" style="display:none;">
@@ -39,8 +41,7 @@
         <div class="menu-container">
             <button class="dots-btn" onclick="toggleMenu()">⋮</button>
             <div class="dropdown" id="myDropdown">
-                <button onclick="goToTimerProAnalisis()">TIMER PRO ANALISIS</button>
-                <button onclick="goToCargaExterna()">Carga externa</button>
+                <button onclick="goToTimerProAnalisis()">Timer Pro Analisis</button>
                 <button onclick="downloadCSV()">Exportar CSV</button>
                 <button onclick="location.reload()" style="color: #ff5252;">Reiniciar Todo</button>
             </div>
@@ -55,7 +56,7 @@
     <div class="add-swimmer-wrap" id="add-swimmer-wrap" style="display:none;">
         <button class="btn-add-swimmer" id="btn-add-swimmer" onclick="addSwimmer()">+ Agregar nadador</button>
     </div>
-
+    <script src="../../shared/js/navigation.js"></script>
     <script src="./cronometro.js"></script>
 </body>
 
