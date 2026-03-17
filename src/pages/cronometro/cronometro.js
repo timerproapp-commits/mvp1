@@ -6,6 +6,7 @@ let raceStarted = false;
 let nextSwimmerId = 1;
 const LONG_PRESS_MS = 900;
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
+const CRONO_STATE_KEY = 'nado_crono_state';
 const CLUB_SWIMMERS_MOCK = [
     { id: 1, nombre: 'Lucia', apellido: 'Benitez', fechaNacimiento: '2015-09-21', sexo: 'F' },
     { id: 2, nombre: 'Tomas', apellido: 'Aguirre', fechaNacimiento: '2012-03-04', sexo: 'M' },
@@ -318,6 +319,94 @@ function formatTime(ms) {
     return `${m}:${s}.${mil}`;
 }
 
+function saveCronoState() {
+    const numInput = document.getElementById('num-swimmers');
+    const styleSelect = document.getElementById('race-style');
+    const distInput = document.getElementById('race-distance');
+    const state = {
+        startTime: startTime,
+        elapsed: startTime ? Date.now() - startTime : 0,
+        swimmers: swimmers,
+        currentRaceName: currentRaceName,
+        raceStarted: raceStarted,
+        nextSwimmerId: nextSwimmerId,
+        setupConfig: {
+            numSwimmers: numInput ? numInput.value : '',
+            style: styleSelect ? styleSelect.value : '',
+            distance: distInput ? distInput.value : ''
+        }
+    };
+    sessionStorage.setItem(CRONO_STATE_KEY, JSON.stringify(state));
+}
+
+function restoreCronoState() {
+    const raw = sessionStorage.getItem(CRONO_STATE_KEY);
+    if (!raw) return;
+
+    let state;
+    try {
+        state = JSON.parse(raw);
+    } catch (e) {
+        sessionStorage.removeItem(CRONO_STATE_KEY);
+        return;
+    }
+
+    if (state.raceStarted) {
+        swimmers = state.swimmers;
+        currentRaceName = state.currentRaceName;
+        raceStarted = state.raceStarted;
+        nextSwimmerId = state.nextSwimmerId;
+
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('header-ui').style.display = 'flex';
+        document.getElementById('run-controls').style.display = 'none';
+        document.getElementById('add-swimmer-wrap').style.display = 'none';
+        document.getElementById('race-name').textContent = currentRaceName;
+
+        const container = document.getElementById('lanes-container');
+        container.innerHTML = '';
+        swimmers.forEach((sw) => {
+            container.insertAdjacentHTML('beforeend', createSwimmerCard(sw.id));
+            renderNameSlot(sw.id);
+            bindLongPressToCard(sw.id);
+            setNameControlsDisabled(sw.id, true);
+
+            const lapBtn = document.getElementById(`lap-${sw.id}`);
+            const pauseBtn = document.getElementById(`pause-${sw.id}`);
+            if (lapBtn) lapBtn.disabled = false;
+            if (pauseBtn) pauseBtn.disabled = false;
+
+            if (sw.laps && sw.laps.length > 0) {
+                document.getElementById(`last-${sw.id}`).innerText = sw.laps[sw.laps.length - 1];
+                document.getElementById(`laps-count-${sw.id}`).innerText = String(sw.laps.length);
+            }
+
+            const card = document.getElementById(`card-${sw.id}`);
+            if (!sw.active) {
+                const btn = document.getElementById(`pause-${sw.id}`);
+                if (btn) { btn.innerText = '\u267B\uFE0F'; btn.style.background = '#555'; btn.style.color = 'white'; }
+                if (card) card.classList.add('paused-lane');
+            } else {
+                if (card) card.classList.add('active-lane');
+            }
+        });
+
+        const elapsed = state.elapsed || 0;
+        startTime = Date.now() - elapsed;
+        timerInterval = setInterval(() => {
+            document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
+        }, 10);
+
+    } else if (state.setupConfig) {
+        const numInput = document.getElementById('num-swimmers');
+        const styleSelect = document.getElementById('race-style');
+        const distInput = document.getElementById('race-distance');
+        if (numInput && state.setupConfig.numSwimmers) numInput.value = state.setupConfig.numSwimmers;
+        if (styleSelect && state.setupConfig.style) styleSelect.value = state.setupConfig.style;
+        if (distInput && state.setupConfig.distance) distInput.value = state.setupConfig.distance;
+    }
+}
+
 // helper para convertir "MM:SS.cc" a centesimas
 function toCentis(t) {
     const [mmss, cc = '00'] = String(t).split('.');
@@ -414,15 +503,20 @@ function goToTimerProAnalisis() {
     if (exportText.trim()) {
         localStorage.setItem(IMPORT_CSV_BUFFER_KEY, exportText);
     }
+    saveCronoState();
+    if (window.TPANavigation) {
+        window.TPANavigation.goTo('cargaTiempos', { from: 'cronometro' });
+        return;
+    }
     window.location.href = '../carga-tiempos/carga-tiempos.html';
 }
 
-function goToCargaExterna() {
-    window.location.href = '../carga-externa/carga-externa.html';
-}
-
-function goToListaNadadores() {
-    window.location.href = '../lista-nadadores/lista-nadadores.html';
+function goToHome() {
+    if (window.TPANavigation) {
+        window.TPANavigation.goTo('home', { from: 'cronometro' });
+        return;
+    }
+    window.location.href = '../../app/index.html';
 }
 
 function downloadCSV() {
@@ -438,6 +532,8 @@ function downloadCSV() {
     a.remove();
     URL.revokeObjectURL(url);
 }
+
+restoreCronoState();
 
 window.onclick = function (event) {
     if (!event.target.matches('.dots-btn')) {
