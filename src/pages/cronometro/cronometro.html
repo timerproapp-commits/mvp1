@@ -56,6 +56,24 @@
     <div class="add-swimmer-wrap" id="add-swimmer-wrap" style="display:none;">
         <button class="btn-add-swimmer" id="btn-add-swimmer" onclick="addSwimmer()">+ Agregar nadador</button>
     </div>
+
+    <div id="confirm-analisis-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:3000; align-items:center; justify-content:center; padding:16px;">
+        <div
+            style="width:100%; max-width:360px; background:#1d1d1d; border:1px solid #3f3f3f; border-radius:12px; padding:14px; color:#fff;">
+            <div style="font-size:1rem; font-weight:700; margin-bottom:8px;">Abandonar el cronometro y ver resultados
+            </div>
+            <div style="font-size:0.9rem; color:#d0d0d0; margin-bottom:12px;">Si continuas, esta carrera quedara
+                finalizada y no podras volver al cronometro.</div>
+            <div style="display:flex; gap:8px;">
+                <button id="btnConfirmNo"
+                    style="flex:1; border:none; border-radius:8px; padding:10px; font-weight:700; background:#3a3a3a; color:#fff;">NO</button>
+                <button id="btnConfirmSi"
+                    style="flex:1; border:none; border-radius:8px; padding:10px; font-weight:700; background:#00a95a; color:#fff;">SI</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../../shared/js/navigation.js"></script>
     <script src="./cronometro.js"></script>
 </body>

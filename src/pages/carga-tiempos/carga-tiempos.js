@@ -236,14 +236,6 @@ $('#btnNewLoad').addEventListener('click', () => {
     window.location.href = '../../app/index.html';
 });
 
-$('#btnBack').addEventListener('click', () => {
-    if (window.TPANavigation) {
-        window.TPANavigation.goBack('home');
-        return;
-    }
-    window.location.href = '../../app/index.html';
-});
-
 // Cierra el modal
 $('#btnClose').addEventListener('click', () => $('#modal').classList.remove('open'));
 
