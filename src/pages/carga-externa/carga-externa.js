@@ -1,4 +1,5 @@
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
+const CSV_DRAFT_KEY = 'nado_csv_textarea_draft';
 const $ = (s) => document.querySelector(s);
 
 function parseMultipleBlocks(rawText) {
@@ -36,9 +37,25 @@ $('#btnLoad').addEventListener('click', () => {
     }
 
     localStorage.setItem(IMPORT_CSV_BUFFER_KEY, raw);
+    sessionStorage.removeItem(CSV_DRAFT_KEY);
+    if (window.TPANavigation) {
+        window.TPANavigation.goTo('cargaTiempos', { from: 'cargaExterna' });
+        return;
+    }
     window.location.href = '../carga-tiempos/carga-tiempos.html';
 });
 
 $('#btnBack').addEventListener('click', () => {
-    window.location.href = '../cronometro/cronometro.html';
+    if (window.TPANavigation) {
+        window.TPANavigation.goTo('home');
+        return;
+    }
+    window.location.href = '../../app/index.html';
+});
+
+const txtRaw = $('#txtRaw');
+const savedDraft = sessionStorage.getItem(CSV_DRAFT_KEY);
+if (savedDraft) txtRaw.value = savedDraft;
+txtRaw.addEventListener('input', () => {
+    sessionStorage.setItem(CSV_DRAFT_KEY, txtRaw.value);
 });

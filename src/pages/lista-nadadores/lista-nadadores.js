@@ -95,7 +95,11 @@ $('#btnAdd').addEventListener('click', addMockSwimmer);
 $('#btnEdit').addEventListener('click', editSelectedSwimmer);
 $('#btnDelete').addEventListener('click', deleteSelectedSwimmer);
 $('#btnBack').addEventListener('click', () => {
-    window.location.href = '../cronometro/cronometro.html';
+    if (window.TPANavigation) {
+        window.TPANavigation.goTo('home');
+        return;
+    }
+    window.location.href = '../../app/index.html';
 });
 
 render();
