@@ -540,6 +540,11 @@ function goToTimerProAnalisis() {
     openAnalisisConfirmModal();
 }
 
+function resetCronoState() {
+    sessionStorage.removeItem(CRONO_STATE_KEY);
+    location.reload();
+}
+
 function goToHome() {
     if (window.TPANavigation) {
         window.TPANavigation.goTo('home', { from: 'cronometro' });
