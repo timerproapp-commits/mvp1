@@ -634,18 +634,31 @@ if (confirmSiBtn) {
     });
 }
 
-window.addEventListener('beforeunload', (e) => {
-    if (raceStarted) {
-        const mensaje = '¿Desea REINICIAR la carrera?\n\nNO SE GUARDARAN LOS TIEMPOS registrados\n\n¿Confirma?';
-        if (confirm(mensaje)) {
-            e.preventDefault();
-            e.returnValue = '';
-            resetRaceToReadyState();
-        } else {
-            e.preventDefault();
-            e.returnValue = '';
-        }
+function askAndResetRace() {
+    if (!raceStarted) return;
+
+    const mensaje = 'Desea REINICIAR la carrera?\nNO SE GUARDARAN LOS TIEMPOS registrados\n\nSi, reiniciar sin guardar\nNo!, volver a la carrera.';
+    if (confirm(mensaje)) {
+        resetRaceToReadyState();
     }
+}
+
+window.addEventListener('keydown', (e) => {
+    const isF5 = e.key === 'F5';
+    const isCtrlR = (e.ctrlKey || e.metaKey) && (e.key === 'r' || e.key === 'R');
+
+    if (!raceStarted || (!isF5 && !isCtrlR)) return;
+
+    e.preventDefault();
+    askAndResetRace();
+});
+
+window.addEventListener('beforeunload', (e) => {
+    if (!raceStarted) return;
+
+    // Respaldo para refresh desde UI del navegador (mobile/desktop).
+    e.preventDefault();
+    e.returnValue = '';
 });
 
 window.onclick = function (event) {
