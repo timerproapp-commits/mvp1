@@ -53,6 +53,22 @@ body {
     color: var(--theme-text);
 }
 
+.setup-form input,
+.setup-form select {
+    background: var(--theme-surface);
+    color: var(--theme-text);
+    border-color: var(--theme-border);
+}
+
+.setup-form input::placeholder {
+    color: var(--theme-muted);
+}
+
+.setup-form select option {
+    background: var(--theme-surface);
+    color: var(--theme-text);
+}
+
 .card,
 .step,
 .result,
