@@ -540,9 +540,62 @@ function goToTimerProAnalisis() {
     openAnalisisConfirmModal();
 }
 
-function resetCronoState() {
+function resetRaceToReadyState() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    startTime = null;
+    raceStarted = false;
+    hideDeleteOptions();
     sessionStorage.removeItem(CRONO_STATE_KEY);
-    location.reload();
+
+    const clock = document.getElementById('main-clock');
+    if (clock) clock.innerText = '00:00.00';
+
+    const runControls = document.getElementById('run-controls');
+    if (runControls) runControls.style.display = 'block';
+
+    const addWrap = document.getElementById('add-swimmer-wrap');
+    if (addWrap) addWrap.style.display = 'block';
+
+    swimmers.forEach((s) => {
+        s.laps = [];
+        s.final = null;
+        s.active = true;
+
+        const lapBtn = document.getElementById(`lap-${s.id}`);
+        const pauseBtn = document.getElementById(`pause-${s.id}`);
+        const card = document.getElementById(`card-${s.id}`);
+        const lastLap = document.getElementById(`last-${s.id}`);
+        const lastDiff = document.getElementById(`lastdiff-${s.id}`);
+        const lapsCount = document.getElementById(`laps-count-${s.id}`);
+
+        if (lapBtn) lapBtn.disabled = true;
+        if (pauseBtn) {
+            pauseBtn.disabled = true;
+            pauseBtn.innerText = '🔴';
+            pauseBtn.style.background = 'var(--pause)';
+            pauseBtn.style.color = 'black';
+        }
+        if (card) {
+            card.classList.remove('active-lane');
+            card.classList.remove('paused-lane');
+        }
+        if (lastLap) lastLap.innerText = '00:00.00';
+        if (lastDiff) lastDiff.innerText = '00:00.00';
+        if (lapsCount) lapsCount.innerText = '0';
+
+        setNameControlsDisabled(s.id, false);
+    });
+}
+
+function resetCronoState() {
+    resetRaceToReadyState();
+
+    document.getElementById('header-ui').style.display = 'none';
+    document.getElementById('setup').style.display = 'block';
 }
 
 function goToHome() {
@@ -585,8 +638,9 @@ window.addEventListener('beforeunload', (e) => {
     if (raceStarted) {
         const mensaje = '¿Desea REINICIAR la carrera?\n\nNO SE GUARDARAN LOS TIEMPOS registrados\n\n¿Confirma?';
         if (confirm(mensaje)) {
-            sessionStorage.removeItem(CRONO_STATE_KEY);
-            // Permitir que la página recargue
+            e.preventDefault();
+            e.returnValue = '';
+            resetRaceToReadyState();
         } else {
             e.preventDefault();
             e.returnValue = '';
