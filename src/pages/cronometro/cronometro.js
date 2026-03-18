@@ -581,6 +581,19 @@ if (confirmSiBtn) {
     });
 }
 
+window.addEventListener('beforeunload', (e) => {
+    if (raceStarted) {
+        const mensaje = '¿Desea REINICIAR la carrera?\n\nNO SE GUARDARAN LOS TIEMPOS registrados\n\n¿Confirma?';
+        if (confirm(mensaje)) {
+            sessionStorage.removeItem(CRONO_STATE_KEY);
+            // Permitir que la página recargue
+        } else {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    }
+});
+
 window.onclick = function (event) {
     if (!event.target.matches('.dots-btn')) {
         document.getElementById('myDropdown').style.display = 'none';
