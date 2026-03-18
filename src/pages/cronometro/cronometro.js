@@ -253,7 +253,7 @@ function startGlobalTimer() {
     timerInterval = setInterval(() => {
         document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
         saveCounter++;
-        if (saveCounter % 500 === 0) saveCronoState(); // guarda cada ~5 segundos
+        if (saveCounter % 20 === 0) saveCronoState(); // guarda cada ~200ms
     }, 10);
     document.getElementById('run-controls').style.display = 'none';
     swimmers.forEach((s) => {
