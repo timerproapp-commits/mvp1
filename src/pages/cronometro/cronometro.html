@@ -6,6 +6,7 @@
     <title>SwimCoach Pro - Final UI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="./cronometro.css">
+    <link rel="stylesheet" href="../../shared/css/theme.css" />
 
 </head>
 
@@ -43,7 +44,7 @@
             <div class="dropdown" id="myDropdown">
                 <button onclick="goToTimerProAnalisis()">Timer Pro Analisis</button>
                 <button onclick="downloadCSV()">Exportar CSV</button>
-                <button onclick="location.reload()" style="color: #ff5252;">Reiniciar Todo</button>
+                <button onclick="resetCronoState()" style="color: #ff5252;">Reiniciar Todo</button>
             </div>
         </div>
     </div>
@@ -74,6 +75,20 @@
         </div>
     </div>
 
+    <div id="confirm-refresh-modal" class="confirm-refresh-modal" aria-hidden="true">
+        <div class="confirm-refresh-card" role="dialog" aria-modal="true" aria-labelledby="refreshModalTitle">
+            <div id="refreshModalTitle" class="confirm-refresh-title">Atencion</div>
+            <div class="confirm-refresh-text">
+                Si refrescas esta pagina, la carrera actual se reiniciara y se perderan todos los tiempos no guardados.
+            </div>
+            <div class="confirm-refresh-actions">
+                <button id="btnRefreshReset" class="confirm-refresh-btn danger">OK = Reiniciar sin guardar</button>
+                <button id="btnRefreshCancel" class="confirm-refresh-btn safe">Cancel = Volver a la carrera</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../shared/js/theme.js"></script>
     <script src="../../shared/js/navigation.js"></script>
     <script src="./cronometro.js"></script>
 </body>

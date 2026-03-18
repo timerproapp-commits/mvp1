@@ -249,8 +249,11 @@ function startGlobalTimer() {
     document.getElementById('add-swimmer-wrap').style.display = 'none';
 
     startTime = Date.now();
+    let saveCounter = 0;
     timerInterval = setInterval(() => {
         document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
+        saveCounter++;
+        if (saveCounter % 20 === 0) saveCronoState(); // guarda cada ~200ms
     }, 10);
     document.getElementById('run-controls').style.display = 'none';
     swimmers.forEach((s) => {
@@ -259,6 +262,7 @@ function startGlobalTimer() {
         document.getElementById(`pause-${s.id}`).disabled = false;
         document.getElementById(`card-${s.id}`).classList.add('active-lane');
     });
+    saveCronoState();
 }
 
 function setNameControlsDisabled(swimmerId, disabled) {
@@ -433,6 +437,7 @@ function recordLap(id) {
     document.getElementById(`last-${id}`).innerText = timeStr;
     document.getElementById(`lastdiff-${id}`).innerText = lapStr;
     document.getElementById(`laps-count-${id}`).innerText = String(s.laps.length);
+    saveCronoState();
 }
 
 function toggleSwimmer(id) {
@@ -454,6 +459,7 @@ function toggleSwimmer(id) {
         btn.style.color = 'black';
         card.classList.replace('paused-lane', 'active-lane');
     }
+    saveCronoState();
 }
 
 function buildMultiTimerExportText() {
@@ -510,6 +516,20 @@ function closeAnalisisConfirmModal() {
     modal.style.display = 'none';
 }
 
+function openRefreshConfirmModal() {
+    const modal = document.getElementById('confirm-refresh-modal');
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeRefreshConfirmModal() {
+    const modal = document.getElementById('confirm-refresh-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
 function proceedToAnalisis() {
     const exportText = buildMultiTimerExportText();
     if (exportText.trim()) {
@@ -532,6 +552,64 @@ function proceedToAnalisis() {
 
 function goToTimerProAnalisis() {
     openAnalisisConfirmModal();
+}
+
+function resetRaceToReadyState() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    startTime = null;
+    raceStarted = false;
+    hideDeleteOptions();
+    sessionStorage.removeItem(CRONO_STATE_KEY);
+
+    const clock = document.getElementById('main-clock');
+    if (clock) clock.innerText = '00:00.00';
+
+    const runControls = document.getElementById('run-controls');
+    if (runControls) runControls.style.display = 'block';
+
+    const addWrap = document.getElementById('add-swimmer-wrap');
+    if (addWrap) addWrap.style.display = 'block';
+
+    swimmers.forEach((s) => {
+        s.laps = [];
+        s.final = null;
+        s.active = true;
+
+        const lapBtn = document.getElementById(`lap-${s.id}`);
+        const pauseBtn = document.getElementById(`pause-${s.id}`);
+        const card = document.getElementById(`card-${s.id}`);
+        const lastLap = document.getElementById(`last-${s.id}`);
+        const lastDiff = document.getElementById(`lastdiff-${s.id}`);
+        const lapsCount = document.getElementById(`laps-count-${s.id}`);
+
+        if (lapBtn) lapBtn.disabled = true;
+        if (pauseBtn) {
+            pauseBtn.disabled = true;
+            pauseBtn.innerText = '🔴';
+            pauseBtn.style.background = 'var(--pause)';
+            pauseBtn.style.color = 'black';
+        }
+        if (card) {
+            card.classList.remove('active-lane');
+            card.classList.remove('paused-lane');
+        }
+        if (lastLap) lastLap.innerText = '00:00.00';
+        if (lastDiff) lastDiff.innerText = '00:00.00';
+        if (lapsCount) lapsCount.innerText = '0';
+
+        setNameControlsDisabled(s.id, false);
+    });
+}
+
+function resetCronoState() {
+    resetRaceToReadyState();
+
+    document.getElementById('header-ui').style.display = 'none';
+    document.getElementById('setup').style.display = 'block';
 }
 
 function goToHome() {
@@ -560,6 +638,8 @@ restoreCronoState();
 
 const confirmNoBtn = document.getElementById('btnConfirmNo');
 const confirmSiBtn = document.getElementById('btnConfirmSi');
+const btnRefreshReset = document.getElementById('btnRefreshReset');
+const btnRefreshCancel = document.getElementById('btnRefreshCancel');
 if (confirmNoBtn) {
     confirmNoBtn.addEventListener('click', closeAnalisisConfirmModal);
 }
@@ -569,6 +649,38 @@ if (confirmSiBtn) {
         proceedToAnalisis();
     });
 }
+if (btnRefreshReset) {
+    btnRefreshReset.addEventListener('click', () => {
+        closeRefreshConfirmModal();
+        resetRaceToReadyState();
+    });
+}
+if (btnRefreshCancel) {
+    btnRefreshCancel.addEventListener('click', closeRefreshConfirmModal);
+}
+
+function askAndResetRace() {
+    if (!raceStarted) return;
+    openRefreshConfirmModal();
+}
+
+window.addEventListener('keydown', (e) => {
+    const isF5 = e.key === 'F5';
+    const isCtrlR = (e.ctrlKey || e.metaKey) && (e.key === 'r' || e.key === 'R');
+
+    if (!raceStarted || (!isF5 && !isCtrlR)) return;
+
+    e.preventDefault();
+    askAndResetRace();
+});
+
+window.addEventListener('beforeunload', (e) => {
+    if (!raceStarted) return;
+
+    // Respaldo para refresh desde UI del navegador (mobile/desktop).
+    e.preventDefault();
+    e.returnValue = '';
+});
 
 window.onclick = function (event) {
     if (!event.target.matches('.dots-btn')) {
@@ -579,5 +691,8 @@ window.onclick = function (event) {
     }
     if (event.target && event.target.id === 'confirm-analisis-modal') {
         closeAnalisisConfirmModal();
+    }
+    if (event.target && event.target.id === 'confirm-refresh-modal') {
+        closeRefreshConfirmModal();
     }
 };
