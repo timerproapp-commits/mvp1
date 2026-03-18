@@ -367,3 +367,69 @@ button:active {
     font-family: monospace;
     /* opcional, queda bien para tiempos */
 }
+
+.confirm-refresh-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 3200;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.confirm-refresh-modal.open {
+    display: flex;
+}
+
+.confirm-refresh-card {
+    width: 100%;
+    max-width: 420px;
+    background: #151515;
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+}
+
+.confirm-refresh-title {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: #ffd9d9;
+}
+
+.confirm-refresh-text {
+    margin-top: 8px;
+    margin-bottom: 14px;
+    color: #ececec;
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
+.confirm-refresh-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.confirm-refresh-btn {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    min-height: 52px;
+    padding: 12px;
+    font-size: 0.96rem;
+    font-weight: 800;
+    text-transform: none;
+}
+
+.confirm-refresh-btn.danger {
+    background: #c62828;
+    color: #fff;
+}
+
+.confirm-refresh-btn.safe {
+    background: #263238;
+    color: #fff;
+}

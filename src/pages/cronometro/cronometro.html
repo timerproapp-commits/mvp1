@@ -75,6 +75,19 @@
         </div>
     </div>
 
+    <div id="confirm-refresh-modal" class="confirm-refresh-modal" aria-hidden="true">
+        <div class="confirm-refresh-card" role="dialog" aria-modal="true" aria-labelledby="refreshModalTitle">
+            <div id="refreshModalTitle" class="confirm-refresh-title">Atencion</div>
+            <div class="confirm-refresh-text">
+                Si refrescas esta pagina, la carrera actual se reiniciara y se perderan todos los tiempos no guardados.
+            </div>
+            <div class="confirm-refresh-actions">
+                <button id="btnRefreshReset" class="confirm-refresh-btn danger">OK = Reiniciar sin guardar</button>
+                <button id="btnRefreshCancel" class="confirm-refresh-btn safe">Cancel = Volver a la carrera</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../../shared/js/theme.js"></script>
     <script src="../../shared/js/navigation.js"></script>
     <script src="./cronometro.js"></script>

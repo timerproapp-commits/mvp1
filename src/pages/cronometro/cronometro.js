@@ -516,6 +516,20 @@ function closeAnalisisConfirmModal() {
     modal.style.display = 'none';
 }
 
+function openRefreshConfirmModal() {
+    const modal = document.getElementById('confirm-refresh-modal');
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeRefreshConfirmModal() {
+    const modal = document.getElementById('confirm-refresh-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
 function proceedToAnalisis() {
     const exportText = buildMultiTimerExportText();
     if (exportText.trim()) {
@@ -624,6 +638,8 @@ restoreCronoState();
 
 const confirmNoBtn = document.getElementById('btnConfirmNo');
 const confirmSiBtn = document.getElementById('btnConfirmSi');
+const btnRefreshReset = document.getElementById('btnRefreshReset');
+const btnRefreshCancel = document.getElementById('btnRefreshCancel');
 if (confirmNoBtn) {
     confirmNoBtn.addEventListener('click', closeAnalisisConfirmModal);
 }
@@ -633,14 +649,19 @@ if (confirmSiBtn) {
         proceedToAnalisis();
     });
 }
+if (btnRefreshReset) {
+    btnRefreshReset.addEventListener('click', () => {
+        closeRefreshConfirmModal();
+        resetRaceToReadyState();
+    });
+}
+if (btnRefreshCancel) {
+    btnRefreshCancel.addEventListener('click', closeRefreshConfirmModal);
+}
 
 function askAndResetRace() {
     if (!raceStarted) return;
-
-    const mensaje = 'ATENCION: Si refrescas esta pagina, la carrera actual se REINICIARA y se perderan TODOS los tiempos no guardados.\n\nOK = Reiniciar sin guardar\nCancel = Volver a la carrera';
-    if (confirm(mensaje)) {
-        resetRaceToReadyState();
-    }
+    openRefreshConfirmModal();
 }
 
 window.addEventListener('keydown', (e) => {
@@ -670,5 +691,8 @@ window.onclick = function (event) {
     }
     if (event.target && event.target.id === 'confirm-analisis-modal') {
         closeAnalisisConfirmModal();
+    }
+    if (event.target && event.target.id === 'confirm-refresh-modal') {
+        closeRefreshConfirmModal();
     }
 };
