@@ -249,8 +249,11 @@ function startGlobalTimer() {
     document.getElementById('add-swimmer-wrap').style.display = 'none';
 
     startTime = Date.now();
+    let saveCounter = 0;
     timerInterval = setInterval(() => {
         document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
+        saveCounter++;
+        if (saveCounter % 500 === 0) saveCronoState(); // guarda cada ~5 segundos
     }, 10);
     document.getElementById('run-controls').style.display = 'none';
     swimmers.forEach((s) => {
@@ -259,6 +262,7 @@ function startGlobalTimer() {
         document.getElementById(`pause-${s.id}`).disabled = false;
         document.getElementById(`card-${s.id}`).classList.add('active-lane');
     });
+    saveCronoState();
 }
 
 function setNameControlsDisabled(swimmerId, disabled) {
@@ -433,6 +437,7 @@ function recordLap(id) {
     document.getElementById(`last-${id}`).innerText = timeStr;
     document.getElementById(`lastdiff-${id}`).innerText = lapStr;
     document.getElementById(`laps-count-${id}`).innerText = String(s.laps.length);
+    saveCronoState();
 }
 
 function toggleSwimmer(id) {
@@ -454,6 +459,7 @@ function toggleSwimmer(id) {
         btn.style.color = 'black';
         card.classList.replace('paused-lane', 'active-lane');
     }
+    saveCronoState();
 }
 
 function buildMultiTimerExportText() {
