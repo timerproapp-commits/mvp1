@@ -637,7 +637,7 @@ if (confirmSiBtn) {
 function askAndResetRace() {
     if (!raceStarted) return;
 
-    const mensaje = 'Desea REINICIAR la carrera?\nNO SE GUARDARAN LOS TIEMPOS registrados\n\nSi, reiniciar sin guardar\nNo!, volver a la carrera.';
+    const mensaje = 'ATENCION: Si refrescas esta pagina, la carrera actual se REINICIARA y se perderan TODOS los tiempos no guardados.\n\nOK = Reiniciar sin guardar\nCancel = Volver a la carrera';
     if (confirm(mensaje)) {
         resetRaceToReadyState();
     }
