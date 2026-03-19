@@ -243,6 +243,68 @@ $('#btnDownloadSummary').addEventListener('click', () => {
     onFlowComplete();
 });
 
+// --- FUNCIONES DE COMPARTIR (MAIL Y WHATSAPP) ---
+// Configuracion de destinatarios
+// ABAP analogia: constantes de configuracion tipo parametros de programa.
+const SHARE_CONFIG = {
+    mailRecipient: 'entrenandoteam@gmail.com',
+    whatsappPhone: '5493413471972' // Formato internacional sin +
+};
+
+function sendSummaryViaEmail() {
+    // Construye y abre mailto link con resumen de resultados.
+    // Este flujo abre el cliente de mail default del usuario.
+    const text = buildSummaryShareText();
+    const status = getStatusBox();
+
+    if (!text) {
+        if (status) status.textContent = 'No hay datos en la revision para enviar.';
+        return;
+    }
+
+    const subject = 'Resultados de entrenamiento - Timer Pro App';
+    const mailtoURL = `mailto:${SHARE_CONFIG.mailRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+
+    try {
+        window.location.href = mailtoURL;
+        if (status) status.textContent = '✅ Abriendo cliente de email...';
+    } catch (e) {
+        if (status) status.textContent = '❌ No se pudo abrir el cliente de mail.';
+    }
+}
+
+function sendSummaryViaWhatsApp() {
+    // Construye y abre link de WhatsApp Web o app móvil con resumen.
+    // URL: https://wa.me/<PHONE>?text=<MESSAGE>
+    // ABAP analogia: similar a una llamada de funcion externa (RFC).
+    const text = buildSummaryShareText();
+    const status = getStatusBox();
+
+    if (!text) {
+        if (status) status.textContent = 'No hay datos en la revision para enviar.';
+        return;
+    }
+
+    const waURL = `https://wa.me/${SHARE_CONFIG.whatsappPhone}?text=${encodeURIComponent(text)}`;
+
+    try {
+        window.open(waURL, '_blank');
+        if (status) status.textContent = '✅ Abriendo WhatsApp...';
+    } catch (e) {
+        if (status) status.textContent = '❌ No se pudo abrir WhatsApp.';
+    }
+}
+
+$('#btnSendEmail').addEventListener('click', () => {
+    sendSummaryViaEmail();
+    onFlowComplete();
+});
+
+$('#btnSendWhatsApp').addEventListener('click', () => {
+    sendSummaryViaWhatsApp();
+    onFlowComplete();
+});
+
 function onFlowComplete() {
     // Al finalizar el flujo de revision, permitimos volver a iniciar ciclo.
     const newLoadBtn = $('#btnNewLoad');
