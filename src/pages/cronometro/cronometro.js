@@ -16,6 +16,7 @@ let swimmers = [];
 let currentRaceName = 'Carrera N/D';
 let raceStarted = false;
 let nextSwimmerId = 1;
+let lastSetupState = null; // Guarda estado del setup para permitir volver atrás
 const LONG_PRESS_MS = 900;
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 const CRONO_STATE_KEY = 'nado_crono_state';
@@ -50,6 +51,131 @@ function toggleMenu() {
     dot.style.display = dot.style.display === 'block' ? 'none' : 'block';
 }
 
+function sanitizeInteger(raw, min, max) {
+    const n = parseInt(String(raw || '').replace(/[^\d]/g, ''), 10);
+    if (!Number.isInteger(n)) return '';
+    return String(Math.min(max, Math.max(min, n)));
+}
+
+function updateRacePreview() {
+    const preview = document.getElementById('race-preview');
+    if (!preview) return;
+
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distanceSelect = document.getElementById('race-distance');
+    const distanceOther = document.getElementById('race-distance-other');
+
+    const style = (styleSelect?.value === 'other'
+        ? (styleOther?.value || '')
+        : (styleSelect?.value || '')).trim();
+    const distance = (distanceSelect?.value === 'other'
+        ? (distanceOther?.value || '')
+        : (distanceSelect?.value || '')).trim();
+
+    if (!style && !distance) {
+        preview.textContent = '--m --';
+        return;
+    }
+
+    preview.textContent = `${distance || '--'}m ${style || '--'}`;
+}
+
+function syncStyleSelectionUI() {
+    const styleSelect = document.getElementById('race-style');
+    const otherInput = document.getElementById('race-style-other');
+    if (!styleSelect || !otherInput) return;
+
+    if (styleSelect.value === 'other') {
+        otherInput.style.display = 'block';
+    } else {
+        otherInput.style.display = 'none';
+        otherInput.value = '';
+    }
+    updateRacePreview();
+}
+
+function syncDistanceSelectionUI() {
+    const distanceSelect = document.getElementById('race-distance');
+    const otherInput = document.getElementById('race-distance-other');
+    if (!distanceSelect || !otherInput) return;
+
+    if (distanceSelect.value === 'other') {
+        otherInput.style.display = 'block';
+    } else {
+        otherInput.style.display = 'none';
+        otherInput.value = '';
+    }
+    updateRacePreview();
+}
+
+function setupCronoSetupUX() {
+    const numInput = document.getElementById('num-swimmers');
+    const btnMinus = document.getElementById('count-minus');
+    const btnPlus = document.getElementById('count-plus');
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distanceSelect = document.getElementById('race-distance');
+    const distanceOther = document.getElementById('race-distance-other');
+
+    if (!numInput || !btnMinus || !btnPlus || !styleSelect || !styleOther || !distanceSelect || !distanceOther) {
+        return;
+    }
+
+    const datePlaceholder = document.getElementById('event-date-placeholder');
+    if (datePlaceholder && !datePlaceholder.value) {
+        datePlaceholder.value = new Date().toISOString().slice(0, 10);
+    }
+
+    const applyNumValue = (raw) => {
+        const fixed = sanitizeInteger(raw, 1, 10);
+        if (!fixed) return;
+        numInput.value = fixed;
+    };
+
+    btnMinus.addEventListener('click', () => {
+        applyNumValue((parseInt(numInput.value || '1', 10) - 1));
+    });
+
+    btnPlus.addEventListener('click', () => {
+        applyNumValue((parseInt(numInput.value || '1', 10) + 1));
+    });
+
+    numInput.addEventListener('input', () => {
+        if (!numInput.value) return;
+        const clamped = sanitizeInteger(numInput.value, 1, 10);
+        if (clamped) numInput.value = clamped;
+    });
+
+    numInput.addEventListener('blur', () => {
+        if (!numInput.value) {
+            numInput.value = '1';
+            return;
+        }
+        const clamped = sanitizeInteger(numInput.value, 1, 10);
+        if (clamped) numInput.value = clamped;
+    });
+
+    styleSelect.addEventListener('change', syncStyleSelectionUI);
+
+    styleOther.addEventListener('input', () => {
+        styleOther.value = styleOther.value.trim().slice(0, 10);
+        syncStyleSelectionUI();
+    });
+
+    distanceSelect.addEventListener('change', syncDistanceSelectionUI);
+
+    distanceOther.addEventListener('input', () => {
+        const digitsOnly = String(distanceOther.value || '').replace(/[^\d]/g, '').slice(0, 6);
+        distanceOther.value = digitsOnly;
+        syncDistanceSelectionUI();
+    });
+
+    syncStyleSelectionUI();
+    syncDistanceSelectionUI();
+    updateRacePreview();
+}
+
 function initRace() {
     // -------------------------------------------------------------------------
     // PREPARACION DE CARRERA
@@ -60,8 +186,18 @@ function initRace() {
     // 4) Cambia vista setup -> vista cronometro
 
     const numRaw = document.getElementById('num-swimmers').value;
-    const style = document.getElementById('race-style').value;
-    const distanceRaw = document.getElementById('race-distance').value;
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distSelect = document.getElementById('race-distance');
+    const distOther = document.getElementById('race-distance-other');
+
+    const style = ((styleSelect && styleSelect.value === 'other')
+        ? (styleOther ? styleOther.value : '')
+        : (styleSelect ? styleSelect.value : '')).trim();
+
+    const distanceRaw = ((distSelect && distSelect.value === 'other')
+        ? (distOther ? distOther.value : '')
+        : (distSelect ? distSelect.value : '')).trim();
     const setupError = document.getElementById('setup-error');
 
     const num = parseInt(numRaw, 10);
@@ -85,6 +221,15 @@ function initRace() {
     currentRaceName = `${style} ${distance}m`;
     document.getElementById('race-name').textContent = currentRaceName;
 
+    // Guarda estado actual del setup para permitir volver atrás
+    lastSetupState = {
+        numSwimmers: numRaw,
+        styleSelectValue: styleSelect?.value || '',
+        styleOtherValue: styleOther?.value || '',
+        distSelectValue: distSelect?.value || '',
+        distOtherValue: distOther?.value || ''
+    };
+
     // Reinicio de estructura en memoria para nueva carrera.
     const container = document.getElementById('lanes-container');
     container.innerHTML = '';
@@ -99,6 +244,7 @@ function initRace() {
 
     document.getElementById('setup').style.display = 'none';
     document.getElementById('header-ui').style.display = 'flex';
+    document.getElementById('back-to-setup-btn').style.display = 'block'; // Mostrar botón atrás
     document.getElementById('run-controls').style.display = 'block';
     document.getElementById('add-swimmer-wrap').style.display = 'block';
 }
@@ -295,6 +441,7 @@ function startGlobalTimer() {
     raceStarted = true;
     hideDeleteOptions();
     document.getElementById('add-swimmer-wrap').style.display = 'none';
+    document.getElementById('back-to-setup-btn').style.display = 'none'; // Ocultar botón atrás una vez que empieza la carrera
 
     startTime = Date.now();
     // saveCounter controla cada cuantos ticks guardamos estado.
@@ -386,7 +533,17 @@ function saveCronoState() {
     // ABAP analogia: serializar estructura global a almacenamiento temporal.
     const numInput = document.getElementById('num-swimmers');
     const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
     const distInput = document.getElementById('race-distance');
+    const distOther = document.getElementById('race-distance-other');
+
+    const resolvedStyle = ((styleSelect && styleSelect.value === 'other')
+        ? (styleOther ? styleOther.value : '')
+        : (styleSelect ? styleSelect.value : '')).trim();
+    const resolvedDistance = ((distInput && distInput.value === 'other')
+        ? (distOther ? distOther.value : '')
+        : (distInput ? distInput.value : '')).trim();
+
     const state = {
         startTime: startTime,
         elapsed: startTime ? Date.now() - startTime : 0,
@@ -396,8 +553,8 @@ function saveCronoState() {
         nextSwimmerId: nextSwimmerId,
         setupConfig: {
             numSwimmers: numInput ? numInput.value : '',
-            style: styleSelect ? styleSelect.value : '',
-            distance: distInput ? distInput.value : ''
+            style: resolvedStyle,
+            distance: resolvedDistance
         }
     };
     sessionStorage.setItem(CRONO_STATE_KEY, JSON.stringify(state));
@@ -469,10 +626,36 @@ function restoreCronoState() {
         // Caso B: no habia iniciado, solo restauramos campos de setup.
         const numInput = document.getElementById('num-swimmers');
         const styleSelect = document.getElementById('race-style');
+        const styleOther = document.getElementById('race-style-other');
         const distInput = document.getElementById('race-distance');
+        const distOther = document.getElementById('race-distance-other');
         if (numInput && state.setupConfig.numSwimmers) numInput.value = state.setupConfig.numSwimmers;
-        if (styleSelect && state.setupConfig.style) styleSelect.value = state.setupConfig.style;
-        if (distInput && state.setupConfig.distance) distInput.value = state.setupConfig.distance;
+        if (styleSelect && state.setupConfig.style) {
+            const styleVal = String(state.setupConfig.style);
+            const isKnownStyle = Array.from(styleSelect.options).some((opt) => opt.value === styleVal);
+            if (isKnownStyle) {
+                styleSelect.value = styleVal;
+                if (styleOther) styleOther.value = '';
+            } else {
+                styleSelect.value = 'other';
+                if (styleOther) styleOther.value = styleVal;
+            }
+        }
+        if (distInput && state.setupConfig.distance) {
+            const distVal = String(state.setupConfig.distance);
+            const isKnownDistance = Array.from(distInput.options).some((opt) => opt.value === distVal);
+            if (isKnownDistance) {
+                distInput.value = distVal;
+                if (distOther) distOther.value = '';
+            } else {
+                distInput.value = 'other';
+                if (distOther) distOther.value = distVal;
+            }
+        }
+
+        syncStyleSelectionUI();
+        syncDistanceSelectionUI();
+        updateRacePreview();
     }
 }
 
@@ -697,6 +880,56 @@ function resetCronoState() {
     document.getElementById('setup').style.display = 'block';
 }
 
+function goBackToSetup() {
+    // -------------------------------------------------------------------------
+    // VOLVER A PANTALLA DE SETUP SIN PERDER LOS DATOS
+    // -------------------------------------------------------------------------
+    // Se llama desde el boton atrás en el header cuando aun no ha iniciado
+    // la carrera (antes de ¡START!). Permite al entrenador corregir errores.
+
+    if (!lastSetupState) {
+        console.warn('No hay estado previo guardado. Volviendo a home.');
+        goToHome();
+        return;
+    }
+
+    // Restaurar valores en los selectores
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distSelect = document.getElementById('race-distance');
+    const distOther = document.getElementById('race-distance-other');
+    const numInput = document.getElementById('num-swimmers');
+
+    if (styleSelect) styleSelect.value = lastSetupState.styleSelectValue;
+    if (styleOther) styleOther.value = lastSetupState.styleOtherValue;
+    if (distSelect) distSelect.value = lastSetupState.distSelectValue;
+    if (distOther) distOther.value = lastSetupState.distOtherValue;
+    if (numInput) numInput.value = lastSetupState.numSwimmers;
+
+    // Sincronizar UI de selectors (mostrar/ocultar inputs de "otro")
+    syncStyleSelectionUI();
+    syncDistanceSelectionUI();
+    updateRacePreview();
+
+    // Transicion de vistas: ocultar header y volver a setup
+    document.getElementById('back-to-setup-btn').style.display = 'none';
+    document.getElementById('header-ui').style.display = 'none';
+    document.getElementById('run-controls').style.display = 'none';
+    document.getElementById('add-swimmer-wrap').style.display = 'none';
+    document.getElementById('lanes-container').innerHTML = '';
+
+    document.getElementById('setup').style.display = 'block';
+
+    // Limpiar estado de carrera
+    swimmers = [];
+    raceStarted = false;
+    nextSwimmerId = 1;
+
+    // Limpiar errores previos
+    const setupError = document.getElementById('setup-error');
+    if (setupError) setupError.textContent = '';
+}
+
 function goToHome() {
     if (window.TPANavigation) {
         window.TPANavigation.goTo('home', { from: 'cronometro' });
@@ -720,6 +953,7 @@ function downloadCSV() {
     URL.revokeObjectURL(url);
 }
 
+setupCronoSetupUX();
 restoreCronoState();
 
 // Registro de handlers de modales.

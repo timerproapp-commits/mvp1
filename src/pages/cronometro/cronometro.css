@@ -55,6 +55,24 @@ body {
     top: 10px;
 }
 
+.back-btn {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.back-btn:active {
+    opacity: 0.7;
+}
+
 .dots-btn {
     background: none;
     border: none;
@@ -87,43 +105,173 @@ body {
 
 .setup-zone {
     text-align: left;
-    padding: 20px 16px;
+    padding: 10px 12px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .setup-title {
-    margin: 0 0 16px;
+    margin: 0 0 6px;
     text-align: center;
+    font-size: 1rem;
+}
+
+.setup-race-preview {
+    text-align: center;
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #b7ffd7;
+    line-height: 1.05;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+}
+
+.setup-race-preview-wrap {
+    border: 1px solid #1f3a5a;
+    background: #081428;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+.setup-race-preview-title {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #93aecf;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.setup-race-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.setup-preview-select {
+    min-height: 40px;
+    border: 1px solid #365677;
+    border-radius: 10px;
+    background: #0c2039;
+    color: #ffffff;
+    font-size: 0.94rem;
+    font-weight: 800;
+    padding: 8px 10px;
 }
 
 .setup-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    flex: 1;
+    min-height: 0;
 }
 
 .setup-form label {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 700;
+    margin-bottom: 2px;
 }
 
+.setup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.setup-chip {
+    flex: 0 0 auto;
+    border: 1px solid #4d4d4d;
+    border-radius: 999px;
+    background: #121212;
+    color: #f3f3f3;
+    padding: 8px 12px;
+    font-size: 0.84rem;
+    text-transform: none;
+    min-height: 36px;
+}
+
+.setup-chip.active {
+    background: #00a95a;
+    border-color: #00c367;
+    color: #042b18;
+    font-weight: 900;
+}
+
+.setup-chip:disabled {
+    opacity: 0.45;
+}
+
+.setup-inline-input,
 .setup-form input,
 .setup-form select {
     width: 100%;
     box-sizing: border-box;
     border: 1px solid #4f4f4f;
-    border-radius: 6px;
+    border-radius: 8px;
     background: #0f0f0f;
     color: #fff;
-    font-size: 1rem;
-    padding: 10px 12px;
+    font-size: 0.92rem;
+    padding: 8px 10px;
+}
+
+.setup-inline-input:disabled {
+    opacity: 0.5;
+}
+
+.setup-count-wrap {
+    margin-top: 0;
+}
+
+.count-selector {
+    display: grid;
+    grid-template-columns: 52px 1fr 52px;
+    gap: 6px;
+    align-items: center;
+}
+
+.count-btn {
+    min-height: 46px;
+    border-radius: 10px;
+    background: #1f2a3a;
+    color: #fff;
+    border: 1px solid #385273;
+    font-size: 1.45rem;
+    line-height: 1;
+}
+
+#num-swimmers {
+    text-align: center;
+    min-height: 46px;
+    font-size: 1.28rem;
+    font-weight: 900;
+}
+
+.setup-disabled-area {
+    margin-top: 0;
+    opacity: 0.62;
+}
+
+.setup-switch-row {
+    display: flex;
+    gap: 6px;
+}
+
+.setup-switch-row .setup-chip {
+    flex: 1;
+}
+
+.setup-actions {
+    margin-top: 8px;
 }
 
 .setup-error {
     color: #ff8f8f;
-    min-height: 20px;
-    font-size: 0.85rem;
-    margin-top: 10px;
+    min-height: 16px;
+    font-size: 0.78rem;
+    margin-top: 4px;
 }
 
 .lanes-grid {
@@ -288,10 +436,10 @@ button {
 .btn-start-global {
     background: var(--accent);
     color: black;
-    padding: 20px;
-    font-size: 1.5rem;
+    padding: 14px;
+    font-size: 1.18rem;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 0;
 }
 
 .add-swimmer-wrap {
@@ -432,4 +580,28 @@ button:active {
 .confirm-refresh-btn.safe {
     background: #263238;
     color: #fff;
+}
+
+@media (max-width: 380px) {
+    .setup-zone {
+        padding: 8px 10px;
+    }
+
+    .setup-race-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .setup-race-preview {
+        font-size: 1.28rem;
+    }
+
+    .setup-chip {
+        padding: 7px 10px;
+        font-size: 0.78rem;
+    }
+
+    .btn-start-global {
+        padding: 12px;
+        font-size: 1.05rem;
+    }
 }
