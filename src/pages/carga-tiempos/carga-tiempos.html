@@ -12,6 +12,11 @@
 
 <body>
 
+  <!--
+    PANTALLA DE REVISION / STAGING
+    Aqui se revisan tiempos importados antes de confirmar.
+    ABAP analogia: ALV de control previo al guardado definitivo.
+  -->
   <main class="container">
 
     <div id="view-carga" class="view active">
@@ -22,7 +27,10 @@
           <div class="help" style="font-size: 0.85rem; text-align: center;">Cronómetro finalizado</div>
         </div>
         <div class="result-body">
+          <!-- Lista dinamica de nadadores y resumen -->
           <div id="summaryBody"></div>
+
+          <!-- Acciones de salida del resumen -->
           <div class="share-actions">
             <button id="btnCopySummary" class="btn light">📋 Copiar resumen</button>
             <button id="btnDownloadSummary" class="btn light">⬇️ Descargar TXT</button>
@@ -39,6 +47,7 @@
 
   </main>
 
+  <!-- Modal de detalle por nadador/parcial -->
   <div class="modal" id="modal">
     <div class="modal-card">
       <div class="modal-head">

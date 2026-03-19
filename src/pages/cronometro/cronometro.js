@@ -1,3 +1,15 @@
+// -----------------------------------------------------------------------------
+// CRONOMETRO - MOTOR PRINCIPAL DE LA APP
+// -----------------------------------------------------------------------------
+// Guia mental para ABAPers:
+// - Variables globales => como DATA global de un programa modulo pool.
+// - swimmers[]        => internal table principal en memoria.
+// - Cada funcion UI   => similar a FORM / METHOD llamado por USER-COMMAND.
+// - sessionStorage    => memoria temporal de sesion (tipo EXPORT/IMPORT ID,
+//                        pero del lado navegador).
+//
+// Regla de este archivo: la logica vive en JS y el HTML aporta placeholders.
+
 let startTime = null;
 let timerInterval = null;
 let swimmers = [];
@@ -17,6 +29,8 @@ const CLUB_SWIMMERS_MOCK = [
 ];
 
 function escapeHtml(text) {
+    // Sanitiza texto para evitar inyeccion HTML al renderizar nombres.
+    // ABAP analogia: aplicar escape previo antes de mostrar en UI HTML.
     return String(text || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -26,15 +40,25 @@ function escapeHtml(text) {
 }
 
 function getSwimmerState(swimmerId) {
+    // Busca "registro" por ID dentro de swimmers.
     return swimmers.find((sw) => sw.id === swimmerId);
 }
 
 function toggleMenu() {
+    // Abre/cierra menu contextual de 3 puntos.
     const dot = document.getElementById('myDropdown');
     dot.style.display = dot.style.display === 'block' ? 'none' : 'block';
 }
 
 function initRace() {
+    // -------------------------------------------------------------------------
+    // PREPARACION DE CARRERA
+    // -------------------------------------------------------------------------
+    // 1) Lee campos de setup
+    // 2) Valida
+    // 3) Construye carriles
+    // 4) Cambia vista setup -> vista cronometro
+
     const numRaw = document.getElementById('num-swimmers').value;
     const style = document.getElementById('race-style').value;
     const distanceRaw = document.getElementById('race-distance').value;
@@ -44,6 +68,7 @@ function initRace() {
     const distance = parseInt(distanceRaw, 10);
 
     if (!Number.isInteger(num) || num <= 0) {
+        // Guard clauses (equivalente a CHECK / MESSAGE ... TYPE 'E').
         setupError.textContent = 'Ingresa una cantidad de nadadores valida.';
         return;
     }
@@ -60,6 +85,7 @@ function initRace() {
     currentRaceName = `${style} ${distance}m`;
     document.getElementById('race-name').textContent = currentRaceName;
 
+    // Reinicio de estructura en memoria para nueva carrera.
     const container = document.getElementById('lanes-container');
     container.innerHTML = '';
     swimmers = [];
@@ -67,6 +93,7 @@ function initRace() {
     nextSwimmerId = 1;
 
     for (let i = 0; i < num; i++) {
+        // Crea N carriles dinamicamente.
         addSwimmer();
     }
 
@@ -77,6 +104,8 @@ function initRace() {
 }
 
 function createSwimmerCard(swimmerId) {
+    // Template de tarjeta/carril.
+    // Nota: se usan handlers inline para acciones rapidas en botones.
     return `
         <div class="lane-card" id="card-${swimmerId}">
             <div class="lane-header">
@@ -97,11 +126,14 @@ function createSwimmerCard(swimmerId) {
 }
 
 function renderNameSlot(swimmerId) {
+    // Render condicional: modo "club" (select) o modo "custom" (input texto).
+    // ABAP analogia: PBO dinamico segun estado de estructura actual.
     const swimmer = getSwimmerState(swimmerId);
     const slot = document.getElementById(`name-slot-${swimmerId}`);
     if (!swimmer || !slot) return;
 
     if (swimmer.nameMode === 'custom') {
+        // Modo texto libre
         slot.innerHTML = `
             <div class="custom-name-wrap">
                 <input
@@ -118,6 +150,7 @@ function renderNameSlot(swimmerId) {
     }
 
     const optionsHtml = CLUB_SWIMMERS_MOCK.map((clubSwimmer) => {
+        // Preseleccion visual del nadador actual.
         const selected = String(swimmer.selectedClubId) === String(clubSwimmer.id) ? 'selected' : '';
         return `<option value="${clubSwimmer.id}" ${selected}>${clubSwimmer.nombre} ${clubSwimmer.apellido} (${clubSwimmer.sexo})</option>`;
     }).join('');
@@ -136,6 +169,7 @@ function renderNameSlot(swimmerId) {
 }
 
 window.onClubSelectChange = (swimmerId, value) => {
+    // Evento onchange del select de nadadores.
     const swimmer = getSwimmerState(swimmerId);
     if (!swimmer) return;
 
@@ -154,12 +188,14 @@ window.onClubSelectChange = (swimmerId, value) => {
 };
 
 window.onCustomNameInput = (swimmerId, value) => {
+    // Sincroniza input custom -> estado interno.
     const swimmer = getSwimmerState(swimmerId);
     if (!swimmer) return;
     swimmer.customName = value;
 };
 
 window.switchToClubList = (swimmerId) => {
+    // Vuelve de modo custom a selector de club.
     const swimmer = getSwimmerState(swimmerId);
     if (!swimmer) return;
     swimmer.nameMode = 'club';
@@ -169,6 +205,8 @@ window.switchToClubList = (swimmerId) => {
 };
 
 function bindLongPressToCard(swimmerId) {
+    // Long press para mostrar boton eliminar solo en pre-start.
+    // UX: evita borrados accidentales por toque simple.
     const card = document.getElementById(`card-${swimmerId}`);
     if (!card) return;
 
@@ -181,6 +219,7 @@ function bindLongPressToCard(swimmerId) {
     };
 
     const onPressStart = () => {
+        // Durante carrera no se puede eliminar carril.
         if (raceStarted) return;
         clearPressTimer();
         pressTimer = setTimeout(() => {
@@ -198,12 +237,14 @@ function bindLongPressToCard(swimmerId) {
 }
 
 function hideDeleteOptions() {
+    // Cierra todos los modos "mostrar eliminar".
     document.querySelectorAll('.lane-card.show-delete').forEach((card) => {
         card.classList.remove('show-delete');
     });
 }
 
 function addSwimmer() {
+    // Alta de un carril/nadador en memoria + UI.
     if (raceStarted) return;
 
     const swimmerId = nextSwimmerId;
@@ -226,6 +267,7 @@ function addSwimmer() {
 }
 
 function removeSwimmer(id) {
+    // Baja de carril solo antes de iniciar.
     if (raceStarted) return;
     if (swimmers.length <= 1) {
         alert('Debe quedar al menos 1 nadador.');
@@ -238,6 +280,12 @@ function removeSwimmer(id) {
 }
 
 function startGlobalTimer() {
+    // -------------------------------------------------------------------------
+    // INICIO DE CARRERA
+    // -------------------------------------------------------------------------
+    // Valida setup de nombres, inicia reloj global, habilita botones de parcial,
+    // y dispara persistencia periodica de estado.
+
     const validationError = validateBeforeStart();
     if (validationError) {
         alert(validationError);
@@ -249,10 +297,12 @@ function startGlobalTimer() {
     document.getElementById('add-swimmer-wrap').style.display = 'none';
 
     startTime = Date.now();
+    // saveCounter controla cada cuantos ticks guardamos estado.
     let saveCounter = 0;
     timerInterval = setInterval(() => {
         document.getElementById('main-clock').innerText = formatTime(Date.now() - startTime);
         saveCounter++;
+        // Guardado frecuente para tolerancia a refresh/cierre accidental.
         if (saveCounter % 20 === 0) saveCronoState(); // guarda cada ~200ms
     }, 10);
     document.getElementById('run-controls').style.display = 'none';
@@ -266,6 +316,7 @@ function startGlobalTimer() {
 }
 
 function setNameControlsDisabled(swimmerId, disabled) {
+    // Bloquea/permite edicion de nombre segun estado de carrera.
     const select = document.getElementById(`name-select-${swimmerId}`);
     const customInput = document.getElementById(`name-custom-${swimmerId}`);
     const backBtn = document.getElementById(`name-back-${swimmerId}`);
@@ -275,6 +326,11 @@ function setNameControlsDisabled(swimmerId, disabled) {
 }
 
 function validateBeforeStart() {
+    // Reglas de negocio previas al start:
+    // 1) Si es custom, nombre obligatorio.
+    // 2) Si es club, seleccion obligatoria.
+    // 3) No se repite el mismo ID de club.
+    // ABAP analogia: validaciones en PAI antes de ejecutar accion principal.
     const selectedClubIds = new Set();
 
     for (let i = 0; i < swimmers.length; i++) {
@@ -302,6 +358,7 @@ function validateBeforeStart() {
 }
 
 function resolveSwimmerName(swimmer) {
+    // Determina nombre final para export/reporte.
     if (swimmer.nameMode === 'custom') {
         const custom = (swimmer.customName || '').trim();
         return custom || `NADADOR ${swimmer.id}`;
@@ -316,6 +373,7 @@ function resolveSwimmerName(swimmer) {
 }
 
 function formatTime(ms) {
+    // Convierte milisegundos a MM:SS.cc (centesimas).
     const t = new Date(ms);
     const m = String(t.getUTCMinutes()).padStart(2, '0');
     const s = String(t.getUTCSeconds()).padStart(2, '0');
@@ -324,6 +382,8 @@ function formatTime(ms) {
 }
 
 function saveCronoState() {
+    // Snapshot de estado completo para restauracion post-refresh.
+    // ABAP analogia: serializar estructura global a almacenamiento temporal.
     const numInput = document.getElementById('num-swimmers');
     const styleSelect = document.getElementById('race-style');
     const distInput = document.getElementById('race-distance');
@@ -344,6 +404,8 @@ function saveCronoState() {
 }
 
 function restoreCronoState() {
+    // Restaura snapshot previo si existe.
+    // Importante: reconstruye UI y estado de cada carril.
     const raw = sessionStorage.getItem(CRONO_STATE_KEY);
     if (!raw) return;
 
@@ -356,6 +418,7 @@ function restoreCronoState() {
     }
 
     if (state.raceStarted) {
+        // Caso A: carrera en curso -> reconstruimos pantalla activa.
         swimmers = state.swimmers;
         currentRaceName = state.currentRaceName;
         raceStarted = state.raceStarted;
@@ -370,6 +433,7 @@ function restoreCronoState() {
         const container = document.getElementById('lanes-container');
         container.innerHTML = '';
         swimmers.forEach((sw) => {
+            // Rehidrata card + controles + valores visuales.
             container.insertAdjacentHTML('beforeend', createSwimmerCard(sw.id));
             renderNameSlot(sw.id);
             bindLongPressToCard(sw.id);
@@ -402,6 +466,7 @@ function restoreCronoState() {
         }, 10);
 
     } else if (state.setupConfig) {
+        // Caso B: no habia iniciado, solo restauramos campos de setup.
         const numInput = document.getElementById('num-swimmers');
         const styleSelect = document.getElementById('race-style');
         const distInput = document.getElementById('race-distance');
@@ -413,12 +478,16 @@ function restoreCronoState() {
 
 // helper para convertir "MM:SS.cc" a centesimas
 function toCentis(t) {
+    // Utilitario para operar diferencias sin errores de punto flotante.
     const [mmss, cc = '00'] = String(t).split('.');
     const [mm = '00', ss = '00'] = (mmss || '').split(':');
     return (parseInt(mm || 0, 10) * 60 + parseInt(ss || 0, 10)) * 100 + parseInt(cc || 0, 10);
 }
 
 function recordLap(id) {
+    // Registra parcial para un carril.
+    // - timeStr: acumulado global
+    // - lapStr : delta respecto del parcial anterior
     const s = swimmers.find((sw) => sw.id === id);
     if (!s.active) return;
 
@@ -441,6 +510,8 @@ function recordLap(id) {
 }
 
 function toggleSwimmer(id) {
+    // Cambia estado activo/pausado del carril.
+    // Nota funcional: no detiene reloj global; solo estado de ese nadador.
     const s = swimmers.find((sw) => sw.id === id);
     const btn = document.getElementById(`pause-${id}`);
     const card = document.getElementById(`card-${id}`);
@@ -463,6 +534,8 @@ function toggleSwimmer(id) {
 }
 
 function buildMultiTimerExportText() {
+    // Exporta en formato compatible con Multi Timer (texto plano).
+    // ABAP analogia: generar archivo de interfaz con layout fijo.
     const parseToCentis = (t) => {
         const [mmss, cc = '00'] = String(t).split('.');
         const [mm = '00', ss = '00'] = (mmss || '').split(':');
@@ -478,6 +551,7 @@ function buildMultiTimerExportText() {
 
     const lines = [];
     swimmers.forEach((s) => {
+        // Solo exportamos nadadores con al menos 1 parcial.
         if (!s.laps || s.laps.length === 0) return;
 
         const nombre = resolveSwimmerName(s);
@@ -505,6 +579,7 @@ function buildMultiTimerExportText() {
 }
 
 function openAnalisisConfirmModal() {
+    // Modal: confirmar salida a analisis final.
     const modal = document.getElementById('confirm-analisis-modal');
     if (!modal) return;
     modal.style.display = 'flex';
@@ -517,6 +592,7 @@ function closeAnalisisConfirmModal() {
 }
 
 function openRefreshConfirmModal() {
+    // Modal custom para confirmar reinicio por refresh.
     const modal = document.getElementById('confirm-refresh-modal');
     if (!modal) return;
     modal.classList.add('open');
@@ -531,6 +607,11 @@ function closeRefreshConfirmModal() {
 }
 
 function proceedToAnalisis() {
+    // 1) Exporta texto
+    // 2) Guarda buffer
+    // 3) Detiene timer
+    // 4) Limpia estado de sesion
+    // 5) Navega a pantalla de analisis
     const exportText = buildMultiTimerExportText();
     if (exportText.trim()) {
         localStorage.setItem(IMPORT_CSV_BUFFER_KEY, exportText);
@@ -555,6 +636,8 @@ function goToTimerProAnalisis() {
 }
 
 function resetRaceToReadyState() {
+    // Resetea carrera "en caliente" sin recargar pagina.
+    // Util para flujo de confirmacion de refresh.
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
@@ -575,6 +658,7 @@ function resetRaceToReadyState() {
     if (addWrap) addWrap.style.display = 'block';
 
     swimmers.forEach((s) => {
+        // Limpieza por carril de datos + estado visual + controles.
         s.laps = [];
         s.final = null;
         s.active = true;
@@ -606,6 +690,7 @@ function resetRaceToReadyState() {
 }
 
 function resetCronoState() {
+    // Reinicio completo hacia vista setup.
     resetRaceToReadyState();
 
     document.getElementById('header-ui').style.display = 'none';
@@ -621,6 +706,7 @@ function goToHome() {
 }
 
 function downloadCSV() {
+    // Descarga manual del export en archivo txt.
     toggleMenu?.();
 
     const blob = new Blob([buildMultiTimerExportText()], { type: 'text/plain;charset=utf-8' });
@@ -636,6 +722,7 @@ function downloadCSV() {
 
 restoreCronoState();
 
+// Registro de handlers de modales.
 const confirmNoBtn = document.getElementById('btnConfirmNo');
 const confirmSiBtn = document.getElementById('btnConfirmSi');
 const btnRefreshReset = document.getElementById('btnRefreshReset');
@@ -660,11 +747,13 @@ if (btnRefreshCancel) {
 }
 
 function askAndResetRace() {
+    // Atajo centralizado para abrir confirmacion de reinicio.
     if (!raceStarted) return;
     openRefreshConfirmModal();
 }
 
 window.addEventListener('keydown', (e) => {
+    // Intercepta F5/Ctrl+R para ofrecer confirmacion custom.
     const isF5 = e.key === 'F5';
     const isCtrlR = (e.ctrlKey || e.metaKey) && (e.key === 'r' || e.key === 'R');
 
@@ -678,11 +767,13 @@ window.addEventListener('beforeunload', (e) => {
     if (!raceStarted) return;
 
     // Respaldo para refresh desde UI del navegador (mobile/desktop).
+    // Nota: navegadores modernos no permiten texto custom en este popup.
     e.preventDefault();
     e.returnValue = '';
 });
 
 window.onclick = function (event) {
+    // Click fuera de menu/tarjeta/modal para cerrar overlays.
     if (!event.target.matches('.dots-btn')) {
         document.getElementById('myDropdown').style.display = 'none';
     }
