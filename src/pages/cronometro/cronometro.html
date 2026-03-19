@@ -18,26 +18,67 @@
         -->
     <div id="setup" class="setup-zone">
         <h2 class="setup-title">Configurar cronometro</h2>
+        <div id="race-preview" class="setup-race-preview">--m --</div>
         <div class="setup-form">
-            <label for="num-swimmers">Cantidad de nadadores *</label>
-            <input type="number" id="num-swimmers" min="1" step="1" value="7" required>
+            <div class="setup-field">
+                <label>Estilo *</label>
+                <div class="chip-row" id="style-row">
+                    <button type="button" class="setup-chip" data-style="Mariposa">Mariposa</button>
+                    <button type="button" class="setup-chip" data-style="Espalda">Espalda</button>
+                    <button type="button" class="setup-chip" data-style="Pecho">Pecho</button>
+                    <button type="button" class="setup-chip" data-style="Libre">Libre</button>
+                    <button type="button" class="setup-chip" data-style="Otro">Otro</button>
+                </div>
+                <input type="text" id="race-style-other" class="setup-inline-input" placeholder="Otro estilo (max 10)"
+                    maxlength="10" style="display:none;">
+                <input type="hidden" id="race-style" value="">
+            </div>
 
-            <label for="race-style">Estilo *</label>
-            <select id="race-style" required>
-                <option value="" selected disabled>Seleccionar estilo</option>
-                <option value="Mariposa">Mariposa</option>
-                <option value="Espalada">Espalada</option>
-                <option value="Pecho">Pecho</option>
-                <option value="Libre">Libre</option>
-            </select>
+            <div class="setup-field">
+                <label>Distancia *</label>
+                <div class="chip-row" id="distance-row">
+                    <button type="button" class="setup-chip" data-distance="25">25</button>
+                    <button type="button" class="setup-chip" data-distance="50">50</button>
+                    <button type="button" class="setup-chip" data-distance="75">75</button>
+                    <button type="button" class="setup-chip" data-distance="100">100</button>
+                    <button type="button" class="setup-chip" data-distance="125">125</button>
+                    <button type="button" class="setup-chip" data-distance="150">150</button>
+                    <button type="button" class="setup-chip" data-distance="200">200</button>
+                    <button type="button" class="setup-chip" data-distance="400">400</button>
+                    <button type="button" class="setup-chip" data-distance="800">800</button>
+                    <button type="button" class="setup-chip" data-distance="1500">1500</button>
+                    <button type="button" class="setup-chip" data-distance="other">Otra distancia</button>
+                </div>
+                <input type="number" id="race-distance-other" class="setup-inline-input" placeholder="Ej: 20" min="1"
+                    max="999999" step="1" style="display:none;">
+                <input type="hidden" id="race-distance" value="">
+            </div>
 
-            <label for="race-distance">Distancia *</label>
-            <input type="number" id="race-distance" min="1" step="1" placeholder="Ej: 100" required>
+            <div class="setup-field setup-count-wrap">
+                <label for="num-swimmers">Cantidad de nadadores *</label>
+                <div class="count-selector">
+                    <button type="button" id="count-minus" class="count-btn" aria-label="Disminuir">-</button>
+                    <input type="number" id="num-swimmers" min="1" max="10" step="1" value="7" required>
+                    <button type="button" id="count-plus" class="count-btn" aria-label="Aumentar">+</button>
+                </div>
+            </div>
+
+            <div class="setup-field setup-disabled-area">
+                <label>Modo (proximamente)</label>
+                <div class="setup-switch-row is-disabled">
+                    <button type="button" class="setup-chip" disabled>Entrenamiento</button>
+                    <button type="button" class="setup-chip" disabled>Torneo</button>
+                </div>
+                <input type="text" class="setup-inline-input" placeholder="Complete el nombre del club/torneo" disabled>
+                <input type="date" id="event-date-placeholder" class="setup-inline-input" disabled>
+            </div>
         </div>
         <div id="setup-error" class="setup-error" aria-live="polite"></div>
-        <button class="btn-start-global" onclick="initRace()">PREPARAR</button>
-        <button class="btn-start-global" id="btnVolverSetup" onclick="goToHome()"
-            style="background:#333; margin-top:8px;">← Volver al inicio</button>
+        <div class="setup-actions">
+            <button class="btn-start-global" onclick="initRace()">PREPARAR</button>
+            <button class="btn-start-global" id="btnVolverSetup" onclick="goToHome()"
+                style="background:#333; margin-top:8px;">← Volver al inicio</button>
+        </div>
     </div>
 
     <!--

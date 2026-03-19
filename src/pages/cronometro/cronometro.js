@@ -50,6 +50,193 @@ function toggleMenu() {
     dot.style.display = dot.style.display === 'block' ? 'none' : 'block';
 }
 
+function sanitizeInteger(raw, min, max) {
+    const n = parseInt(String(raw || '').replace(/[^\d]/g, ''), 10);
+    if (!Number.isInteger(n)) return '';
+    return String(Math.min(max, Math.max(min, n)));
+}
+
+function updateRacePreview() {
+    const preview = document.getElementById('race-preview');
+    if (!preview) return;
+
+    const style = (document.getElementById('race-style')?.value || '').trim();
+    const distance = (document.getElementById('race-distance')?.value || '').trim();
+
+    if (!style && !distance) {
+        preview.textContent = '--m --';
+        return;
+    }
+
+    preview.textContent = `${distance || '--'}m ${style || '--'}`;
+}
+
+function syncStyleSelectionUI() {
+    const hiddenStyle = document.getElementById('race-style');
+    const otherInput = document.getElementById('race-style-other');
+    const chips = Array.from(document.querySelectorAll('#style-row .setup-chip'));
+    if (!hiddenStyle || !otherInput || !chips.length) return;
+
+    const current = (hiddenStyle.value || '').trim();
+    const known = ['Mariposa', 'Espalda', 'Pecho', 'Libre'];
+    const isCustom = !!current && !known.includes(current);
+
+    chips.forEach((chip) => chip.classList.remove('active'));
+
+    if (!current) {
+        otherInput.style.display = 'none';
+        otherInput.value = '';
+        updateRacePreview();
+        return;
+    }
+
+    if (isCustom) {
+        const customChip = chips.find((c) => c.dataset.style === 'Otro');
+        if (customChip) customChip.classList.add('active');
+        otherInput.style.display = 'block';
+        otherInput.value = current;
+        updateRacePreview();
+        return;
+    }
+
+    const chip = chips.find((c) => c.dataset.style === current);
+    if (chip) chip.classList.add('active');
+    otherInput.style.display = 'none';
+    otherInput.value = '';
+    updateRacePreview();
+}
+
+function syncDistanceSelectionUI() {
+    const hiddenDistance = document.getElementById('race-distance');
+    const otherInput = document.getElementById('race-distance-other');
+    const chips = Array.from(document.querySelectorAll('#distance-row .setup-chip'));
+    if (!hiddenDistance || !otherInput || !chips.length) return;
+
+    const current = (hiddenDistance.value || '').trim();
+    const known = new Set(['25', '50', '75', '100', '125', '150', '200', '400', '800', '1500']);
+    const isCustom = !!current && !known.has(current);
+
+    chips.forEach((chip) => chip.classList.remove('active'));
+
+    if (!current) {
+        otherInput.style.display = 'none';
+        otherInput.value = '';
+        updateRacePreview();
+        return;
+    }
+
+    if (isCustom) {
+        const customChip = chips.find((c) => c.dataset.distance === 'other');
+        if (customChip) customChip.classList.add('active');
+        otherInput.style.display = 'block';
+        otherInput.value = current;
+        updateRacePreview();
+        return;
+    }
+
+    const chip = chips.find((c) => c.dataset.distance === current);
+    if (chip) chip.classList.add('active');
+    otherInput.style.display = 'none';
+    otherInput.value = '';
+    updateRacePreview();
+}
+
+function setupCronoSetupUX() {
+    const numInput = document.getElementById('num-swimmers');
+    const btnMinus = document.getElementById('count-minus');
+    const btnPlus = document.getElementById('count-plus');
+    const styleHidden = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distanceHidden = document.getElementById('race-distance');
+    const distanceOther = document.getElementById('race-distance-other');
+
+    if (!numInput || !btnMinus || !btnPlus || !styleHidden || !styleOther || !distanceHidden || !distanceOther) {
+        return;
+    }
+
+    const datePlaceholder = document.getElementById('event-date-placeholder');
+    if (datePlaceholder && !datePlaceholder.value) {
+        datePlaceholder.value = new Date().toISOString().slice(0, 10);
+    }
+
+    const applyNumValue = (raw) => {
+        const fixed = sanitizeInteger(raw, 1, 10);
+        if (!fixed) return;
+        numInput.value = fixed;
+    };
+
+    btnMinus.addEventListener('click', () => {
+        applyNumValue((parseInt(numInput.value || '1', 10) - 1));
+    });
+
+    btnPlus.addEventListener('click', () => {
+        applyNumValue((parseInt(numInput.value || '1', 10) + 1));
+    });
+
+    numInput.addEventListener('input', () => {
+        if (!numInput.value) return;
+        const clamped = sanitizeInteger(numInput.value, 1, 10);
+        if (clamped) numInput.value = clamped;
+    });
+
+    numInput.addEventListener('blur', () => {
+        if (!numInput.value) {
+            numInput.value = '1';
+            return;
+        }
+        const clamped = sanitizeInteger(numInput.value, 1, 10);
+        if (clamped) numInput.value = clamped;
+    });
+
+    document.querySelectorAll('#style-row .setup-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+            const picked = chip.dataset.style || '';
+            if (picked === 'Otro') {
+                styleHidden.value = styleOther.value.trim();
+                styleOther.style.display = 'block';
+                styleOther.focus();
+            } else {
+                styleHidden.value = picked;
+                styleOther.style.display = 'none';
+                styleOther.value = '';
+            }
+            syncStyleSelectionUI();
+        });
+    });
+
+    styleOther.addEventListener('input', () => {
+        styleHidden.value = styleOther.value.trim();
+        syncStyleSelectionUI();
+    });
+
+    document.querySelectorAll('#distance-row .setup-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+            const picked = chip.dataset.distance || '';
+            if (picked === 'other') {
+                distanceHidden.value = sanitizeInteger(distanceOther.value, 1, 999999);
+                distanceOther.style.display = 'block';
+                distanceOther.focus();
+            } else {
+                distanceHidden.value = picked;
+                distanceOther.style.display = 'none';
+                distanceOther.value = '';
+            }
+            syncDistanceSelectionUI();
+        });
+    });
+
+    distanceOther.addEventListener('input', () => {
+        const digitsOnly = String(distanceOther.value || '').replace(/[^\d]/g, '').slice(0, 6);
+        distanceOther.value = digitsOnly;
+        distanceHidden.value = sanitizeInteger(digitsOnly, 1, 999999);
+        syncDistanceSelectionUI();
+    });
+
+    syncStyleSelectionUI();
+    syncDistanceSelectionUI();
+    updateRacePreview();
+}
+
 function initRace() {
     // -------------------------------------------------------------------------
     // PREPARACION DE CARRERA
@@ -60,7 +247,7 @@ function initRace() {
     // 4) Cambia vista setup -> vista cronometro
 
     const numRaw = document.getElementById('num-swimmers').value;
-    const style = document.getElementById('race-style').value;
+    const style = (document.getElementById('race-style').value || '').trim();
     const distanceRaw = document.getElementById('race-distance').value;
     const setupError = document.getElementById('setup-error');
 
@@ -473,6 +660,10 @@ function restoreCronoState() {
         if (numInput && state.setupConfig.numSwimmers) numInput.value = state.setupConfig.numSwimmers;
         if (styleSelect && state.setupConfig.style) styleSelect.value = state.setupConfig.style;
         if (distInput && state.setupConfig.distance) distInput.value = state.setupConfig.distance;
+
+        syncStyleSelectionUI();
+        syncDistanceSelectionUI();
+        updateRacePreview();
     }
 }
 
@@ -720,6 +911,7 @@ function downloadCSV() {
     URL.revokeObjectURL(url);
 }
 
+setupCronoSetupUX();
 restoreCronoState();
 
 // Registro de handlers de modales.
