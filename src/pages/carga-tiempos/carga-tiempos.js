@@ -243,6 +243,34 @@ $('#btnDownloadSummary').addEventListener('click', () => {
     onFlowComplete();
 });
 
+$('#btnSendEmail').addEventListener('click', () => {
+    // Placeholder: Enviar mail
+    // En futuro: integrar con API o generar mailto link
+    const text = buildSummaryShareText();
+    const status = getStatusBox();
+    if (!text) {
+        if (status) status.textContent = 'No hay datos en la revision para enviar.';
+        return;
+    }
+
+    // Placeholder: mostrar mensaje
+    if (status) status.textContent = '📧 Funcionalidad de email próximamente disponible.';
+});
+
+$('#btnSendWhatsApp').addEventListener('click', () => {
+    // Placeholder: Enviar por WhatsApp
+    // En futuro: generar link whatsapp://send o usar API de WhatsApp Business
+    const text = buildSummaryShareText();
+    const status = getStatusBox();
+    if (!text) {
+        if (status) status.textContent = 'No hay datos en la revision para enviar.';
+        return;
+    }
+
+    // Placeholder: mostrar mensaje
+    if (status) status.textContent = '📱 Funcionalidad de WhatsApp próximamente disponible.';
+});
+
 function onFlowComplete() {
     // Al finalizar el flujo de revision, permitimos volver a iniciar ciclo.
     const newLoadBtn = $('#btnNewLoad');
