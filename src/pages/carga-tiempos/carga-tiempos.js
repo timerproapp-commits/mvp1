@@ -247,8 +247,8 @@ $('#btnDownloadSummary').addEventListener('click', () => {
 // Configuracion de destinatarios
 // ABAP analogia: constantes de configuracion tipo parametros de programa.
 const SHARE_CONFIG = {
-    mailRecipient: 'entrenandoteam@gmail.com',
-    whatsappPhone: '5493413471972' // Formato internacional sin +
+    mailRecipient: 'facundononis88@gmail.com',
+    whatsappPhone: '5493413117080' // Formato internacional sin +
 };
 
 function sendSummaryViaEmail() {
