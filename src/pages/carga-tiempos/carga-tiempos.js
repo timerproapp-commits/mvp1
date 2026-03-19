@@ -1,4 +1,9 @@
 // --- LÓGICA DE DATOS ---
+// Esta pantalla es una "zona de staging" para revisar tiempos antes de confirmar.
+// ABAP analogia:
+// - SS_STAGING ~ memoria temporal tipo EXPORT TO MEMORY ID.
+// - items[] ~ internal table con resultados parseados.
+// - modal de detalle ~ doble click sobre ALV para ver linea detallada.
 const SS_STAGING = 'nado_staging_session'; // Nombre de la "llave" para guardar datos temporales en el navegador
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 const $ = s => document.querySelector(s); // Atajo para no escribir document.querySelector siempre
@@ -21,9 +26,11 @@ const fmtMs = (sec) => {
 // Carga los datos guardados en la memoria temporal (sessionStorage)
 function loadStaging() {
     try {
+        // Lee JSON y lo transforma a objeto JS.
         const s = sessionStorage.getItem(SS_STAGING);
         return s ? JSON.parse(s) : { items: [] };
     } catch (e) {
+        // Fallback defensivo ante JSON corrupto.
         return { items: [] };
     }
 }
@@ -34,10 +41,13 @@ function saveStaging(obj) {
 }
 
 function getStatusBox() {
+    // Punto unico de acceso al label de estado para no repetir querySelector.
     return document.querySelector('#status');
 }
 
 function buildSummaryShareText() {
+    // Construye un TXT legible para copiar/pegar en WhatsApp, mail, etc.
+    // ABAP analogia: similar a armar un spool/export de reporte en texto plano.
     const items = loadStaging().items || [];
     if (!items.length) return '';
 
@@ -48,6 +58,7 @@ function buildSummaryShareText() {
 
     items.forEach((it, idx) => {
         const vueltas = it.rawRows || [];
+        // secs = lista de parciales convertidos a numero para estadistica.
         const secs = vueltas.map(r => toSec(r.vuelta)).filter(v => Number.isFinite(v));
         const sorted = [...secs].sort((a, b) => a - b);
         const mid = Math.floor(sorted.length / 2);
@@ -72,6 +83,7 @@ function buildSummaryShareText() {
 }
 
 async function copySummaryToClipboard() {
+    // Flujo async porque clipboard API retorna Promise.
     const text = buildSummaryShareText();
     const status = getStatusBox();
     if (!text) {
@@ -88,6 +100,7 @@ async function copySummaryToClipboard() {
 }
 
 function downloadSummaryTxt() {
+    // Descarga local de archivo .txt (sin backend).
     const text = buildSummaryShareText();
     const status = getStatusBox();
     if (!text) {
@@ -97,6 +110,7 @@ function downloadSummaryTxt() {
 
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    // createObjectURL genera una URL temporal apuntando al blob en memoria.
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -124,6 +138,7 @@ function parseMultipleBlocks(rawText) {
         const headerIdx = lines.findIndex(l => /n[uú]mero/i.test(l) && /vuelta/i.test(l));
         const dataLines = lines.slice(headerIdx + 1);
         const rows = [];
+        // lastDur guarda ultimo tiempo para mostrar resumen rapido.
         let lastDur = '';
 
         // Procesa cada línea de tiempos separada por punto y coma (;)
@@ -131,6 +146,10 @@ function parseMultipleBlocks(rawText) {
             if (l.includes(';')) {
                 const p = l.split(';').map(x => x.trim());
                 if (p.length >= 3) {
+                    // Estructura por fila:
+                    // p[0] -> numero de parcial
+                    // p[1] -> duration (acumulado)
+                    // p[2] -> vuelta (tiempo de ese parcial)
                     rows.push({ lap: p[0], duration: p[1], vuelta: p[2] });
                     lastDur = p[2]; // Guarda el último tiempo para mostrarlo como "Total"
                 }
@@ -142,6 +161,8 @@ function parseMultipleBlocks(rawText) {
 
 // Dibuja la lista de nadadores en la sección "Paso 2"
 function renderStaging() {
+    // Render completo (limpiar y volver a pintar).
+    // ABAP analogia: REFRESH alv + LOOP AT itab para repintar salida.
     const cont = $('#summaryBody');
     cont.innerHTML = '';
     loadStaging().items.forEach((it, idx) => {
@@ -153,6 +174,7 @@ function renderStaging() {
 }
 
 window.viewDetails = (idx) => {
+    // Handler global para boton inline "Ver".
     const it = loadStaging().items[idx];
     const modalTbody = $('#modalTbody');
     const metricsBox = $('#metrics');
@@ -202,6 +224,8 @@ window.viewDetails = (idx) => {
 
 // Evento al tocar "Confirmar y Guardar"
 $('#btnConfirm').addEventListener('click', () => {
+    // MVP actual: "Guardar" limpia staging y muestra aviso.
+    // En version futura esto podria persistir en backend/API.
     sessionStorage.removeItem(SS_STAGING); // Borra la precarga
     renderStaging(); // Limpia la pantalla
     alert('¡Guardado!');
@@ -209,6 +233,7 @@ $('#btnConfirm').addEventListener('click', () => {
 });
 
 $('#btnCopySummary').addEventListener('click', () => {
+    // Copiar y habilitar boton "Cargar nuevos tiempos".
     copySummaryToClipboard();
     onFlowComplete();
 });
@@ -219,11 +244,14 @@ $('#btnDownloadSummary').addEventListener('click', () => {
 });
 
 function onFlowComplete() {
+    // Al finalizar el flujo de revision, permitimos volver a iniciar ciclo.
     const newLoadBtn = $('#btnNewLoad');
     if (newLoadBtn) newLoadBtn.style.display = 'block';
 }
 
 $('#btnNewLoad').addEventListener('click', () => {
+    // Limpieza total de buffers temporales.
+    // ABAP analogia: CLEAR / FREE de estructuras temporales antes de nuevo proceso.
     sessionStorage.removeItem(SS_STAGING);
     sessionStorage.removeItem('nado_crono_state');
     sessionStorage.removeItem('nado_csv_textarea_draft');
@@ -241,9 +269,11 @@ $('#btnClose').addEventListener('click', () => $('#modal').classList.remove('ope
 
 // Ejecuta al iniciar para cargar automaticamente datos importados desde Cronometro o Carga Externa
 function importBufferedCsvToStaging() {
+    // Este buffer es puente entre pantallas (localStorage).
     const importedCsv = localStorage.getItem(IMPORT_CSV_BUFFER_KEY);
     if (!importedCsv) return;
 
+    // Parseamos y anexamos al staging actual.
     const results = parseMultipleBlocks(importedCsv);
     if (results.length) {
         const st = loadStaging();
@@ -261,5 +291,6 @@ function importBufferedCsvToStaging() {
     localStorage.removeItem(IMPORT_CSV_BUFFER_KEY);
 }
 
+// Bootstrapping de pantalla: 1) importar si hay buffer, 2) renderizar lista.
 importBufferedCsvToStaging();
 renderStaging();

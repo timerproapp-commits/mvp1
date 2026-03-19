@@ -1,5 +1,13 @@
 (function () {
+    // -------------------------------------------------------------------------
+    // MODULO DE NAVEGACION GLOBAL
+    // -------------------------------------------------------------------------
+    // Este IIFE (funcion autoejecutable) encapsula variables privadas.
+    // ABAP analogia: como una clase local con atributos privados y metodos
+    // estaticos expuestos solo por una interfaz publica.
+
     const APP_PATHS = {
+        // Rutas cuando estamos navegando desde src/app/*
         home: './index.html',
         cronometro: '../pages/cronometro/cronometro.html',
         cargaTiempos: '../pages/carga-tiempos/carga-tiempos.html',
@@ -8,6 +16,7 @@
     };
 
     const PAGE_PATHS = {
+        // Rutas cuando estamos en src/pages/* (subcarpetas).
         home: '../../app/index.html',
         cronometro: '../cronometro/cronometro.html',
         cargaTiempos: '../carga-tiempos/carga-tiempos.html',
@@ -16,11 +25,16 @@
     };
 
     function getPathMap() {
+        // Normalizamos slash/backslash para evitar problemas Win vs URL.
         const path = window.location.pathname.replace(/\\/g, '/').toLowerCase();
+        // Elegimos mapa de rutas segun contexto actual.
         return path.includes('/src/app/') ? APP_PATHS : PAGE_PATHS;
     }
 
     function getCurrentSection() {
+        // Deteccion de seccion actual.
+        // ABAP analogia: CASE sy-repid / sy-dynnr para saber en que pantalla
+        // estamos y decidir comportamiento de BACK.
         const path = window.location.pathname.replace(/\\/g, '/').toLowerCase();
         if (path.includes('/src/app/index.html') || path.endsWith('/src/app/')) return 'home';
         if (path.includes('/src/pages/cronometro/')) return 'cronometro';
@@ -35,8 +49,11 @@
         const targetPath = pathMap[target];
         if (!targetPath) return null;
 
+        // URL con query params, equivalente a pasar parametros en memoria
+        // (SET PARAMETER ID / GET PARAMETER ID) pero via query string.
         const url = new URL(targetPath, window.location.href);
         Object.entries(params || {}).forEach(([key, value]) => {
+            // No incluimos params vacios para mantener URL limpia.
             if (value === undefined || value === null || value === '') return;
             url.searchParams.set(key, String(value));
         });
@@ -44,8 +61,10 @@
     }
 
     function goTo(target, params) {
+        // Clon simple para no mutar el objeto original recibido.
         const merged = { ...(params || {}) };
         if (!merged.from) {
+            // Si no viene origen, lo inferimos automaticamente.
             merged.from = getCurrentSection();
         }
 
@@ -55,21 +74,27 @@
     }
 
     function goBack(defaultTarget) {
+        // Lee ?from=... desde URL para volver al origen real.
         const from = new URLSearchParams(window.location.search).get('from');
         const pathMap = getPathMap();
 
+        // Si existe origen valido, volvemos ahi.
         if (from && pathMap[from]) {
             goTo(from);
             return;
         }
 
+        // Si no, fallback a home o al target indicado.
         goTo(defaultTarget || 'home');
     }
 
     function getParam(name) {
+        // Helper reutilizable para leer params desde URL.
         return new URLSearchParams(window.location.search).get(name) || '';
     }
 
+    // API publica del modulo.
+    // ABAP analogia: publicar metodos de utilidad en una clase global estatica.
     window.TPANavigation = {
         goTo,
         goBack,
