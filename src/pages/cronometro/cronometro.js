@@ -16,6 +16,7 @@ let swimmers = [];
 let currentRaceName = 'Carrera N/D';
 let raceStarted = false;
 let nextSwimmerId = 1;
+let lastSetupState = null; // Guarda estado del setup para permitir volver atrás
 const LONG_PRESS_MS = 900;
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 const CRONO_STATE_KEY = 'nado_crono_state';
@@ -220,6 +221,15 @@ function initRace() {
     currentRaceName = `${style} ${distance}m`;
     document.getElementById('race-name').textContent = currentRaceName;
 
+    // Guarda estado actual del setup para permitir volver atrás
+    lastSetupState = {
+        numSwimmers: numRaw,
+        styleSelectValue: styleSelect?.value || '',
+        styleOtherValue: styleOther?.value || '',
+        distSelectValue: distSelect?.value || '',
+        distOtherValue: distOther?.value || ''
+    };
+
     // Reinicio de estructura en memoria para nueva carrera.
     const container = document.getElementById('lanes-container');
     container.innerHTML = '';
@@ -234,6 +244,7 @@ function initRace() {
 
     document.getElementById('setup').style.display = 'none';
     document.getElementById('header-ui').style.display = 'flex';
+    document.getElementById('back-to-setup-btn').style.display = 'block'; // Mostrar botón atrás
     document.getElementById('run-controls').style.display = 'block';
     document.getElementById('add-swimmer-wrap').style.display = 'block';
 }
@@ -430,6 +441,7 @@ function startGlobalTimer() {
     raceStarted = true;
     hideDeleteOptions();
     document.getElementById('add-swimmer-wrap').style.display = 'none';
+    document.getElementById('back-to-setup-btn').style.display = 'none'; // Ocultar botón atrás una vez que empieza la carrera
 
     startTime = Date.now();
     // saveCounter controla cada cuantos ticks guardamos estado.
@@ -866,6 +878,56 @@ function resetCronoState() {
 
     document.getElementById('header-ui').style.display = 'none';
     document.getElementById('setup').style.display = 'block';
+}
+
+function goBackToSetup() {
+    // -------------------------------------------------------------------------
+    // VOLVER A PANTALLA DE SETUP SIN PERDER LOS DATOS
+    // -------------------------------------------------------------------------
+    // Se llama desde el boton atrás en el header cuando aun no ha iniciado
+    // la carrera (antes de ¡START!). Permite al entrenador corregir errores.
+
+    if (!lastSetupState) {
+        console.warn('No hay estado previo guardado. Volviendo a home.');
+        goToHome();
+        return;
+    }
+
+    // Restaurar valores en los selectores
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distSelect = document.getElementById('race-distance');
+    const distOther = document.getElementById('race-distance-other');
+    const numInput = document.getElementById('num-swimmers');
+
+    if (styleSelect) styleSelect.value = lastSetupState.styleSelectValue;
+    if (styleOther) styleOther.value = lastSetupState.styleOtherValue;
+    if (distSelect) distSelect.value = lastSetupState.distSelectValue;
+    if (distOther) distOther.value = lastSetupState.distOtherValue;
+    if (numInput) numInput.value = lastSetupState.numSwimmers;
+
+    // Sincronizar UI de selectors (mostrar/ocultar inputs de "otro")
+    syncStyleSelectionUI();
+    syncDistanceSelectionUI();
+    updateRacePreview();
+
+    // Transicion de vistas: ocultar header y volver a setup
+    document.getElementById('back-to-setup-btn').style.display = 'none';
+    document.getElementById('header-ui').style.display = 'none';
+    document.getElementById('run-controls').style.display = 'none';
+    document.getElementById('add-swimmer-wrap').style.display = 'none';
+    document.getElementById('lanes-container').innerHTML = '';
+
+    document.getElementById('setup').style.display = 'block';
+
+    // Limpiar estado de carrera
+    swimmers = [];
+    raceStarted = false;
+    nextSwimmerId = 1;
+
+    // Limpiar errores previos
+    const setupError = document.getElementById('setup-error');
+    if (setupError) setupError.textContent = '';
 }
 
 function goToHome() {
