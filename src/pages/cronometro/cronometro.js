@@ -60,8 +60,17 @@ function updateRacePreview() {
     const preview = document.getElementById('race-preview');
     if (!preview) return;
 
-    const style = (document.getElementById('race-style')?.value || '').trim();
-    const distance = (document.getElementById('race-distance')?.value || '').trim();
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distanceSelect = document.getElementById('race-distance');
+    const distanceOther = document.getElementById('race-distance-other');
+
+    const style = (styleSelect?.value === 'other'
+        ? (styleOther?.value || '')
+        : (styleSelect?.value || '')).trim();
+    const distance = (distanceSelect?.value === 'other'
+        ? (distanceOther?.value || '')
+        : (distanceSelect?.value || '')).trim();
 
     if (!style && !distance) {
         preview.textContent = '--m --';
@@ -72,72 +81,30 @@ function updateRacePreview() {
 }
 
 function syncStyleSelectionUI() {
-    const hiddenStyle = document.getElementById('race-style');
+    const styleSelect = document.getElementById('race-style');
     const otherInput = document.getElementById('race-style-other');
-    const chips = Array.from(document.querySelectorAll('#style-row .setup-chip'));
-    if (!hiddenStyle || !otherInput || !chips.length) return;
+    if (!styleSelect || !otherInput) return;
 
-    const current = (hiddenStyle.value || '').trim();
-    const known = ['Mariposa', 'Espalda', 'Pecho', 'Libre'];
-    const isCustom = !!current && !known.includes(current);
-
-    chips.forEach((chip) => chip.classList.remove('active'));
-
-    if (!current) {
+    if (styleSelect.value === 'other') {
+        otherInput.style.display = 'block';
+    } else {
         otherInput.style.display = 'none';
         otherInput.value = '';
-        updateRacePreview();
-        return;
     }
-
-    if (isCustom) {
-        const customChip = chips.find((c) => c.dataset.style === 'Otro');
-        if (customChip) customChip.classList.add('active');
-        otherInput.style.display = 'block';
-        otherInput.value = current;
-        updateRacePreview();
-        return;
-    }
-
-    const chip = chips.find((c) => c.dataset.style === current);
-    if (chip) chip.classList.add('active');
-    otherInput.style.display = 'none';
-    otherInput.value = '';
     updateRacePreview();
 }
 
 function syncDistanceSelectionUI() {
-    const hiddenDistance = document.getElementById('race-distance');
+    const distanceSelect = document.getElementById('race-distance');
     const otherInput = document.getElementById('race-distance-other');
-    const chips = Array.from(document.querySelectorAll('#distance-row .setup-chip'));
-    if (!hiddenDistance || !otherInput || !chips.length) return;
+    if (!distanceSelect || !otherInput) return;
 
-    const current = (hiddenDistance.value || '').trim();
-    const known = new Set(['25', '50', '75', '100', '125', '150', '200', '400', '800', '1500']);
-    const isCustom = !!current && !known.has(current);
-
-    chips.forEach((chip) => chip.classList.remove('active'));
-
-    if (!current) {
+    if (distanceSelect.value === 'other') {
+        otherInput.style.display = 'block';
+    } else {
         otherInput.style.display = 'none';
         otherInput.value = '';
-        updateRacePreview();
-        return;
     }
-
-    if (isCustom) {
-        const customChip = chips.find((c) => c.dataset.distance === 'other');
-        if (customChip) customChip.classList.add('active');
-        otherInput.style.display = 'block';
-        otherInput.value = current;
-        updateRacePreview();
-        return;
-    }
-
-    const chip = chips.find((c) => c.dataset.distance === current);
-    if (chip) chip.classList.add('active');
-    otherInput.style.display = 'none';
-    otherInput.value = '';
     updateRacePreview();
 }
 
@@ -145,12 +112,12 @@ function setupCronoSetupUX() {
     const numInput = document.getElementById('num-swimmers');
     const btnMinus = document.getElementById('count-minus');
     const btnPlus = document.getElementById('count-plus');
-    const styleHidden = document.getElementById('race-style');
+    const styleSelect = document.getElementById('race-style');
     const styleOther = document.getElementById('race-style-other');
-    const distanceHidden = document.getElementById('race-distance');
+    const distanceSelect = document.getElementById('race-distance');
     const distanceOther = document.getElementById('race-distance-other');
 
-    if (!numInput || !btnMinus || !btnPlus || !styleHidden || !styleOther || !distanceHidden || !distanceOther) {
+    if (!numInput || !btnMinus || !btnPlus || !styleSelect || !styleOther || !distanceSelect || !distanceOther) {
         return;
     }
 
@@ -188,47 +155,18 @@ function setupCronoSetupUX() {
         if (clamped) numInput.value = clamped;
     });
 
-    document.querySelectorAll('#style-row .setup-chip').forEach((chip) => {
-        chip.addEventListener('click', () => {
-            const picked = chip.dataset.style || '';
-            if (picked === 'Otro') {
-                styleHidden.value = styleOther.value.trim();
-                styleOther.style.display = 'block';
-                styleOther.focus();
-            } else {
-                styleHidden.value = picked;
-                styleOther.style.display = 'none';
-                styleOther.value = '';
-            }
-            syncStyleSelectionUI();
-        });
-    });
+    styleSelect.addEventListener('change', syncStyleSelectionUI);
 
     styleOther.addEventListener('input', () => {
-        styleHidden.value = styleOther.value.trim();
+        styleOther.value = styleOther.value.trim().slice(0, 10);
         syncStyleSelectionUI();
     });
 
-    document.querySelectorAll('#distance-row .setup-chip').forEach((chip) => {
-        chip.addEventListener('click', () => {
-            const picked = chip.dataset.distance || '';
-            if (picked === 'other') {
-                distanceHidden.value = sanitizeInteger(distanceOther.value, 1, 999999);
-                distanceOther.style.display = 'block';
-                distanceOther.focus();
-            } else {
-                distanceHidden.value = picked;
-                distanceOther.style.display = 'none';
-                distanceOther.value = '';
-            }
-            syncDistanceSelectionUI();
-        });
-    });
+    distanceSelect.addEventListener('change', syncDistanceSelectionUI);
 
     distanceOther.addEventListener('input', () => {
         const digitsOnly = String(distanceOther.value || '').replace(/[^\d]/g, '').slice(0, 6);
         distanceOther.value = digitsOnly;
-        distanceHidden.value = sanitizeInteger(digitsOnly, 1, 999999);
         syncDistanceSelectionUI();
     });
 
@@ -247,8 +185,18 @@ function initRace() {
     // 4) Cambia vista setup -> vista cronometro
 
     const numRaw = document.getElementById('num-swimmers').value;
-    const style = (document.getElementById('race-style').value || '').trim();
-    const distanceRaw = document.getElementById('race-distance').value;
+    const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
+    const distSelect = document.getElementById('race-distance');
+    const distOther = document.getElementById('race-distance-other');
+
+    const style = ((styleSelect && styleSelect.value === 'other')
+        ? (styleOther ? styleOther.value : '')
+        : (styleSelect ? styleSelect.value : '')).trim();
+
+    const distanceRaw = ((distSelect && distSelect.value === 'other')
+        ? (distOther ? distOther.value : '')
+        : (distSelect ? distSelect.value : '')).trim();
     const setupError = document.getElementById('setup-error');
 
     const num = parseInt(numRaw, 10);
@@ -573,7 +521,17 @@ function saveCronoState() {
     // ABAP analogia: serializar estructura global a almacenamiento temporal.
     const numInput = document.getElementById('num-swimmers');
     const styleSelect = document.getElementById('race-style');
+    const styleOther = document.getElementById('race-style-other');
     const distInput = document.getElementById('race-distance');
+    const distOther = document.getElementById('race-distance-other');
+
+    const resolvedStyle = ((styleSelect && styleSelect.value === 'other')
+        ? (styleOther ? styleOther.value : '')
+        : (styleSelect ? styleSelect.value : '')).trim();
+    const resolvedDistance = ((distInput && distInput.value === 'other')
+        ? (distOther ? distOther.value : '')
+        : (distInput ? distInput.value : '')).trim();
+
     const state = {
         startTime: startTime,
         elapsed: startTime ? Date.now() - startTime : 0,
@@ -583,8 +541,8 @@ function saveCronoState() {
         nextSwimmerId: nextSwimmerId,
         setupConfig: {
             numSwimmers: numInput ? numInput.value : '',
-            style: styleSelect ? styleSelect.value : '',
-            distance: distInput ? distInput.value : ''
+            style: resolvedStyle,
+            distance: resolvedDistance
         }
     };
     sessionStorage.setItem(CRONO_STATE_KEY, JSON.stringify(state));
@@ -656,10 +614,32 @@ function restoreCronoState() {
         // Caso B: no habia iniciado, solo restauramos campos de setup.
         const numInput = document.getElementById('num-swimmers');
         const styleSelect = document.getElementById('race-style');
+        const styleOther = document.getElementById('race-style-other');
         const distInput = document.getElementById('race-distance');
+        const distOther = document.getElementById('race-distance-other');
         if (numInput && state.setupConfig.numSwimmers) numInput.value = state.setupConfig.numSwimmers;
-        if (styleSelect && state.setupConfig.style) styleSelect.value = state.setupConfig.style;
-        if (distInput && state.setupConfig.distance) distInput.value = state.setupConfig.distance;
+        if (styleSelect && state.setupConfig.style) {
+            const styleVal = String(state.setupConfig.style);
+            const isKnownStyle = Array.from(styleSelect.options).some((opt) => opt.value === styleVal);
+            if (isKnownStyle) {
+                styleSelect.value = styleVal;
+                if (styleOther) styleOther.value = '';
+            } else {
+                styleSelect.value = 'other';
+                if (styleOther) styleOther.value = styleVal;
+            }
+        }
+        if (distInput && state.setupConfig.distance) {
+            const distVal = String(state.setupConfig.distance);
+            const isKnownDistance = Array.from(distInput.options).some((opt) => opt.value === distVal);
+            if (isKnownDistance) {
+                distInput.value = distVal;
+                if (distOther) distOther.value = '';
+            } else {
+                distInput.value = 'other';
+                if (distOther) distOther.value = distVal;
+            }
+        }
 
         syncStyleSelectionUI();
         syncDistanceSelectionUI();

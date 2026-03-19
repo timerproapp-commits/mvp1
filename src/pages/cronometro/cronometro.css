@@ -109,6 +109,40 @@ body {
     letter-spacing: 0.02em;
 }
 
+.setup-race-preview-wrap {
+    border: 1px solid #1f3a5a;
+    background: #081428;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+.setup-race-preview-title {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #93aecf;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.setup-race-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.setup-preview-select {
+    min-height: 40px;
+    border: 1px solid #365677;
+    border-radius: 10px;
+    background: #0c2039;
+    color: #ffffff;
+    font-size: 0.94rem;
+    font-weight: 800;
+    padding: 8px 10px;
+}
+
 .setup-form {
     display: flex;
     flex-direction: column;
@@ -127,23 +161,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
-
-.chip-row {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: thin;
-}
-
-.chip-row::-webkit-scrollbar {
-    height: 4px;
-}
-
-.chip-row::-webkit-scrollbar-thumb {
-    background: #3f3f3f;
-    border-radius: 999px;
 }
 
 .setup-chip {
@@ -187,7 +204,7 @@ body {
 }
 
 .setup-count-wrap {
-    margin-top: 2px;
+    margin-top: 0;
 }
 
 .count-selector {
@@ -215,7 +232,7 @@ body {
 }
 
 .setup-disabled-area {
-    margin-top: 2px;
+    margin-top: 0;
     opacity: 0.62;
 }
 
@@ -550,6 +567,10 @@ button:active {
 @media (max-width: 380px) {
     .setup-zone {
         padding: 8px 10px;
+    }
+
+    .setup-race-controls {
+        grid-template-columns: 1fr;
     }
 
     .setup-race-preview {
