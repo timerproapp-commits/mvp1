@@ -1,0 +1,298 @@
+/* VARIABLES DE COLOR: Si cambias estos códigos (ej. #8cdec0), cambia el color de fondo de las secciones */
+:root {
+    --orange-bg: #8cdec0;
+    /* Color de fondo para la sección de Carga (Paso 1) */
+    --orange-bd: #a9bdc1;
+    /* Color del borde para la sección de Carga */
+    --comp-bg: #89c5db;
+    /* Color de fondo para la sección de Revisión (Paso 2) */
+    --comp-bd: #899faa;
+    /* Color del borde para la sección de Revisión */
+    --nav-height: 60px;
+    /* Altura fija de la barra de navegación superior */
+}
+
+/* BARRA DE NAVEGACIÓN SUPERIOR: Controla que siempre esté arriba (sticky) y su diseño */
+header {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    border-bottom: 1px solid #000000;
+    /* Línea gruesa negra debajo del menú */
+    height: var(--nav-height);
+    display: flex;
+    justify-content: space-around;
+    /* Distribuye los botones equitativamente */
+    align-items: center;
+    z-index: 1000;
+    /* Asegura que el menú esté siempre por encima del contenido */
+    padding: 0 10px;
+}
+
+/* BOTONES DEL MENÚ: Define el aspecto de los iconos y el texto del menú */
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #666;
+    /* Color gris para botones no seleccionados */
+    font-size: 0.7rem;
+    font-weight: 600;
+    transition: 0.2s;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* ESTADO ACTIVO: Color azul cuando estás en esa "página" o vista */
+.nav-btn.active {
+    color: #2962FF;
+}
+
+.nav-btn i {
+    font-size: 1.4rem;
+    margin-bottom: 2px;
+}
+
+/* VISTAS: Controla que solo se vea el contenido de la pestaña seleccionada */
+.view {
+    display: none;
+    width: 100%;
+}
+
+/* Por defecto oculto */
+.view.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Se muestra si tiene la clase 'active' */
+
+.container {
+    padding: 20px 14px;
+    gap: 20px;
+}
+
+/* PRÓXIMAMENTE: Diseño para las secciones que aún no tienen contenido real */
+.coming-soon {
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    text-align: center;
+}
+
+.coming-soon h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* TARJETAS DE PASO 1 Y 2: Define bordes redondeados y anchos máximos */
+.step,
+.result {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 14px;
+}
+
+.step {
+    border: 1px solid var(--orange-bd);
+    background: var(--orange-bg);
+}
+
+.result {
+    border: 1px solid var(--comp-bd);
+    background: var(--comp-bg);
+}
+
+.step-head,
+.result-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    gap: 8px;
+    border-bottom: 1px dashed var(--orange-bd);
+}
+
+.result-head {
+    border-bottom-color: var(--comp-bd);
+}
+
+/* ETIQUETAS (PASO 1 / PASO 2): Los rectángulos de colores arriba de cada sección */
+.badge {
+    background: #d477ba;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.result-head .badge {
+    background: #d477ba;
+    color: #0b2a35;
+}
+
+.step-body,
+.result-body {
+    padding: 16px;
+}
+
+.share-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.share-actions .btn {
+    font-size: 1rem;
+    padding: 10px;
+}
+
+/* CUADRO DE TEXTO: Donde pegas los datos de WhatsApp */
+textarea {
+    min-height: 180px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-family: monospace;
+}
+
+/* BOTONES GENERALES: Tamaño, relleno y forma de los botones de acción */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 20px
+}
+
+.btn.primary {
+    background: #0b6368;
+    color: #fff;
+}
+
+.btn.light {
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+/* FILA DE PRECARGA: Cómo se ve cada nadador cargado en la lista antes de guardar */
+.inline-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--comp-bd);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    text-align: center;
+}
+
+/* MODAL (VENTANA EMERGENTE): Fondo oscuro y contenedor de la tabla de detalles */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    z-index: 2000;
+}
+
+.modal.open {
+    display: flex;
+}
+
+/* Se activa con esta clase */
+.modal-card {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-head {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* CHIPS DE MÉTRICAS: Las etiquetas de Mejor/Peor tiempo dentro del modal */
+#metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.chip {
+    background: #eee;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+/* TABLA DE DETALLES: mejor contraste + indicador visual lateral */
+#modalTbody td {
+    padding: 6px 8px;
+}
+
+#modalTbody td.lap-vuelta {
+    position: relative;
+    padding-right: 22px;
+}
+
+#modalTbody td.lap-status-best::after,
+#modalTbody td.lap-status-worst::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+#modalTbody td.lap-status-best::after {
+    background: #1d9b4d;
+}
+
+#modalTbody td.lap-status-worst::after {
+    background: #d13438;
+}
+
+/* RESPONSIVE: Si la pantalla es ancha, las filas de precarga se ponen horizontales en vez de verticales */
+@media (min-width: 600px) {
+    .inline-row {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+}

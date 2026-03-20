@@ -1,0 +1,114 @@
+:root {
+    --panel-bg: #c9e8f5;
+    --panel-bd: #93b6c5;
+}
+
+body {
+    margin: 0;
+}
+
+.container {
+    padding: 20px 14px;
+    display: flex;
+    justify-content: center;
+}
+
+.panel {
+    width: 100%;
+    max-width: 700px;
+    border: 1px solid var(--panel-bd);
+    border-radius: 14px;
+    background: var(--panel-bg);
+}
+
+.panel-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 16px;
+    border-bottom: 1px dashed var(--panel-bd);
+}
+
+.badge {
+    background: #d477ba;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.toolbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 14px;
+}
+
+.list-container {
+    padding: 0 14px 14px;
+    display: grid;
+    gap: 10px;
+}
+
+.list-row {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--panel-bd);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.row-main {
+    display: grid;
+    gap: 4px;
+}
+
+.row-title {
+    font-weight: 700;
+}
+
+.row-meta {
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn.primary {
+    background: #0b6368;
+    color: #fff;
+}
+
+.btn.light {
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.btn.danger {
+    background: #ffe6e6;
+    border: 1px solid #e3b0b0;
+    color: #8b1f1f;
+}
+
+.back-btn {
+    margin: 8px 14px 14px;
+}
+
+@media (max-width: 520px) {
+    .toolbar {
+        grid-template-columns: 1fr;
+    }
+}

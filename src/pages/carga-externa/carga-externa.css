@@ -1,0 +1,73 @@
+:root {
+    --orange-bg: #8cdec0;
+    --orange-bd: #a9bdc1;
+}
+
+body {
+    margin: 0;
+}
+
+.container {
+    padding: 20px 14px;
+    display: flex;
+    justify-content: center;
+}
+
+.step {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 14px;
+    border: 1px solid var(--orange-bd);
+    background: var(--orange-bg);
+}
+
+.step-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    gap: 8px;
+    border-bottom: 1px dashed var(--orange-bd);
+}
+
+.badge {
+    background: #d477ba;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.step-body {
+    padding: 16px;
+}
+
+textarea {
+    min-height: 180px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-family: monospace;
+}
+
+.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.btn.primary {
+    background: #0b6368;
+    color: #fff;
+}
+
+.btn.light {
+    background: #fff;
+    border: 1px solid #ddd;
+}

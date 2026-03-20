@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nado • Lista de nadadores</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="./lista-nadadores.css" />
+    <link rel="stylesheet" href="../../shared/css/theme.css" />
+</head>
+
+<body>
+    <!--
+            LISTA DE NADADORES (MVP)
+            ABAP analogia: mini mantenimiento (alta/cambio/baja) sobre tabla interna mock.
+        -->
+    <main class="container">
+        <section class="panel">
+            <div class="panel-head">
+                <span class="badge">LISTA DE NADADORES</span>
+                <div class="subtitle">MVP con datos mock del club</div>
+            </div>
+
+            <!-- Barra de acciones CRUD mock -->
+            <div class="toolbar">
+                <button id="btnAdd" class="btn primary">+ Agregar</button>
+                <button id="btnEdit" class="btn light">Editar</button>
+                <button id="btnDelete" class="btn danger">Eliminar</button>
+            </div>
+
+            <!-- Mensajes de estado de la operacion -->
+            <div id="status" class="help" style="text-align:center;"></div>
+
+            <!-- Contenedor dinamico de filas -->
+            <div id="listContainer" class="list-container"></div>
+
+            <button id="btnBack" class="btn light back-btn">← Volver al inicio</button>
+        </section>
+    </main>
+
+    <script src="../../shared/js/theme.js"></script>
+    <script src="../../shared/js/navigation.js"></script>
+    <script src="./lista-nadadores.js"></script>
+</body>
+
+</html>
