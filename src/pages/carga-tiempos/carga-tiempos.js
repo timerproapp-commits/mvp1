@@ -8,13 +8,36 @@ const SS_STAGING = 'nado_staging_session'; // Nombre de la "llave" para guardar 
 const IMPORT_CSV_BUFFER_KEY = 'nado_import_csv_buffer';
 const $ = s => document.querySelector(s); // Atajo para no escribir document.querySelector siempre
 
-// Convierte el formato 00:00:00.000 a un número total de segundos (útil para cálculos matemáticos)
+// Convierte tiempos a segundos soportando:
+// - HH:MM:SS.mmm (ej. CSV externo)
+// - MM:SS.cc     (ej. cronometro propio)
 const toSec = (t) => {
-    const parts = (t || '0:0:0').split(':');
-    if (parts.length < 3) return 0;
-    const [h, m] = parts;
-    const [s, ms] = parts[2].split('.');
-    return (+h) * 3600 + (+m) * 60 + (+s) + ((+ms || 0) / 1000);
+    const raw = String(t || '').trim();
+    if (!raw) return 0;
+
+    const parts = raw.split(':');
+    if (parts.length === 3) {
+        // HH:MM:SS.mmm
+        const [h, m, secMs] = parts;
+        const [s, ms = '0'] = String(secMs || '').split('.');
+        const msNorm = parseInt(String(ms).padEnd(3, '0').slice(0, 3), 10) || 0;
+        return (parseInt(h || 0, 10) * 3600)
+            + (parseInt(m || 0, 10) * 60)
+            + (parseInt(s || 0, 10))
+            + (msNorm / 1000);
+    }
+
+    if (parts.length === 2) {
+        // MM:SS.cc (centesimas)
+        const [m, secCs] = parts;
+        const [s, cs = '0'] = String(secCs || '').split('.');
+        const csNorm = parseInt(String(cs).padEnd(2, '0').slice(0, 2), 10) || 0;
+        return (parseInt(m || 0, 10) * 60)
+            + (parseInt(s || 0, 10))
+            + (csNorm / 100);
+    }
+
+    return 0;
 };
 
 // Convierte un número de segundos de vuelta a formato de texto 00:00.000 para que el humano lo lea bien
@@ -151,7 +174,7 @@ function parseMultipleBlocks(rawText) {
                     // p[1] -> duration (acumulado)
                     // p[2] -> vuelta (tiempo de ese parcial)
                     rows.push({ lap: p[0], duration: p[1], vuelta: p[2] });
-                    lastDur = p[2]; // Guarda el último tiempo para mostrarlo como "Total"
+                    lastDur = p[1]; // "Total" debe ser el acumulado (duration)
                 }
             }
         });
@@ -189,27 +212,34 @@ window.viewDetails = (idx) => {
     const mid = Math.floor(sorted.length / 2);
     const mediana = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 
-    // 2. Límites para Top 3 (Mejores y Peores)
-    const topMejoresLimite = sorted[2];
-    const topPeoresLimite = sorted[sorted.length - 3];
+    // 2. Seleccion exacta de Top 3 (mejores/peores) por ranking.
+    // Evita pintar "de mas" cuando hay empates de tiempo.
+    const ranked = secs
+        .map((v, i) => ({ v, i }))
+        .filter((x) => Number.isFinite(x.v))
+        .sort((a, b) => a.v - b.v || a.i - b.i);
+
+    const bestCount = Math.min(3, ranked.length);
+    const worstCount = Math.min(3, ranked.length);
+    const bestSet = new Set(ranked.slice(0, bestCount).map((x) => x.i));
+    const worstSet = new Set(ranked.slice(-worstCount).map((x) => x.i));
 
     // --- RENDERIZADO DE LA TABLA ---
     it.rawRows.forEach((r, i) => {
-        const val = secs[i];
-        let style = '';
+        let statusClass = '';
 
-        if (val <= topMejoresLimite) {
-            style = 'background:#B7E1C2; font-weight:bold;'; // Verde
-        } else if (val >= topPeoresLimite) {
-            style = 'background:#F5B5B5;'; // Rojo
+        if (bestSet.has(i)) {
+            statusClass = 'lap-status-best';
+        } else if (worstSet.has(i)) {
+            statusClass = 'lap-status-worst';
         }
 
         modalTbody.innerHTML += `
-      <tr style="${style}">
-        <td>${r.lap}</td>
-        <td>${r.duration}</td>
-        <td>${r.vuelta}</td>
-      </tr>`;
+            <tr>
+                <td>${r.lap}</td>
+                <td>${r.duration}</td>
+                <td class="lap-vuelta ${statusClass}">${r.vuelta}</td>
+            </tr>`;
     });
 
     // --- RENDERIZADO DE CHIPS ---
