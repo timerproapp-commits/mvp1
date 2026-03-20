@@ -258,6 +258,36 @@ textarea {
     font-size: 0.85rem;
 }
 
+/* TABLA DE DETALLES: mejor contraste + indicador visual lateral */
+#modalTbody td {
+    padding: 6px 8px;
+}
+
+#modalTbody td.lap-vuelta {
+    position: relative;
+    padding-right: 22px;
+}
+
+#modalTbody td.lap-status-best::after,
+#modalTbody td.lap-status-worst::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+#modalTbody td.lap-status-best::after {
+    background: #1d9b4d;
+}
+
+#modalTbody td.lap-status-worst::after {
+    background: #d13438;
+}
+
 /* RESPONSIVE: Si la pantalla es ancha, las filas de precarga se ponen horizontales en vez de verticales */
 @media (min-width: 600px) {
     .inline-row {
