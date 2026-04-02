@@ -1,0 +1,35 @@
+.home-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-card {
+    width: 100%;
+    max-width: 560px;
+}
+
+.home-head {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.home-head h1 {
+    margin: 10px 0 8px;
+}
+
+.home-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.home-actions .btn {
+    width: 100%;
+}
+
+.home-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 12px 0;
+}
